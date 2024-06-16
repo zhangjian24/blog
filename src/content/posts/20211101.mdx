@@ -1,0 +1,356 @@
+---
+title: 'mybatis执行流程分析'
+pubDate: 2021-11-01
+description: 'mybatis执行流程分析'
+author: 'jianzhang'
+image:
+    url: 'https://docs.astro.build/assets/full-logo-light.png'
+    alt: 'mybatis执行流程分析'
+tags: ["后端"]
+---
+
+# 配置加载
+
+通过 `XMLConfigBuilder.parse` 解析`configuration.xml` 和 `mapper.xml` 生成`org.apache.ibatis.session.Configuration`，生成 `SqlSessionFactory` 
+
+```java
+      public SqlSessionFactory build(Reader reader, String environment, Properties properties) {
+        SqlSessionFactory var5;
+        try {
+            XMLConfigBuilder parser = new XMLConfigBuilder(reader, environment, properties);
+            var5 = this.build(parser.parse());
+        } catch (Exception var14) {
+            throw ExceptionFactory.wrapException("Error building SqlSession.", var14);
+        } finally {
+            ErrorContext.instance().reset();
+
+            try {
+                reader.close();
+            } catch (IOException var13) {
+            }
+
+        }
+
+        return var5;
+    }
+
+    public SqlSessionFactory build(Configuration config) {
+        return new DefaultSqlSessionFactory(config);
+    }
+
+```
+
+在生成`Configuration` 的过程，通过`XMLMapperBuilder.parse` -> `XMLStatementBuilder.parseStatementNode` -> `XMLLanguageDriver.createSqlSource`  -> `XMLScriptBuilder.parseDynamicTags` -> `Configuration.addMappedStatement`  解析sql语句标签，生成对应的`MappedStatement` 对象，以id 作为key 放在 Configuration 的mappedStatements的map 中。
+
+# mapper对象的注册
+
+`MapperScan` 注解引入了 `MapperScannerRegistrar` 的bean
+
+![image-20211110152624776](http://oss.jianzhang.site/images/20240611001011.png)
+
+ `MapperScannerRegistrar`  实现了接口 `ImportBeanDefinitionRegistrar.registerBeanDefinitions` ，注册了MapperScannerConfigurer 的bean
+
+```java
+
+public class MapperScannerRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware {
+    public MapperScannerRegistrar() {
+    }
+
+    /** @deprecated */
+    @Deprecated
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+    }
+
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        //处理注解 MapperScan
+        AnnotationAttributes mapperScanAttrs = AnnotationAttributes.fromMap(importingClassMetadata.getAnnotationAttributes(MapperScan.class.getName()));
+        if (mapperScanAttrs != null) {
+            this.registerBeanDefinitions(mapperScanAttrs, registry, generateBaseBeanName(importingClassMetadata, 0));
+        }
+
+    }
+
+    void registerBeanDefinitions(AnnotationAttributes annoAttrs, BeanDefinitionRegistry registry, String beanName) {
+        //添加 MapperScannerConfigurer 的bean定义
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(MapperScannerConfigurer.class);
+
+        List<String> basePackages = new ArrayList();
+        basePackages.addAll((Collection)Arrays.stream(annoAttrs.getStringArray("value")).filter(StringUtils::hasText).collect(Collectors.toList()));
+        basePackages.addAll((Collection)Arrays.stream(annoAttrs.getStringArray("basePackages")).filter(StringUtils::hasText).collect(Collectors.toList()));
+        basePackages.addAll((Collection)Arrays.stream(annoAttrs.getClassArray("basePackageClasses")).map(ClassUtils::getPackageName).collect(Collectors.toList()));
+        String lazyInitialization = annoAttrs.getString("lazyInitialization");
+        if (StringUtils.hasText(lazyInitialization)) {
+            builder.addPropertyValue("lazyInitialization", lazyInitialization);
+        }
+
+        builder.addPropertyValue("basePackage", StringUtils.collectionToCommaDelimitedString(basePackages));
+        registry.registerBeanDefinition(beanName, builder.getBeanDefinition());
+    }
+
+}
+
+```
+
+![image-20211110154806612](http://oss.jianzhang.site/images/20240611001050.png)
+
+`MapperScannerConfigurer` 实现了 `BeanDefinitionRegistryPostProcessor` 接口，扫描mapper 包
+
+```java
+public class MapperScannerConfigurer implements BeanDefinitionRegistryPostProcessor, InitializingBean, ApplicationContextAware, BeanNameAware {
+
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
+
+        ClassPathMapperScanner scanner = new ClassPathMapperScanner(registry);
+
+        scanner.scan(StringUtils.tokenizeToStringArray(this.basePackage, ",; \t\n"));
+    }
+}
+```
+
+类 `ClassPathMapperScanner`  覆盖了 `ClassPathBeanDefinitionScanner` 的 `doScan` 方法，扫描mapper接口并配置其生成bean的工厂bean
+
+```java
+public class ClassPathMapperScanner extends ClassPathBeanDefinitionScanner {
+
+    private Class<? extends MapperFactoryBean> mapperFactoryBeanClass = MapperFactoryBean.class;
+
+      public Set<BeanDefinitionHolder> doScan(String... basePackages) {
+        //父类逻辑
+        Set<BeanDefinitionHolder> beanDefinitions = super.doScan(basePackages);
+				//自己的逻辑
+        this.processBeanDefinitions(beanDefinitions);
+
+        return beanDefinitions;
+    }
+
+    private void processBeanDefinitions(Set<BeanDefinitionHolder> beanDefinitions) {
+        GenericBeanDefinition definition;
+        for(Iterator var3 = beanDefinitions.iterator(); var3.hasNext(); definition.setLazyInit(this.lazyInitialization)) {
+            BeanDefinitionHolder holder = (BeanDefinitionHolder)var3.next();
+            definition = (GenericBeanDefinition)holder.getBeanDefinition();
+            //mapper 接口类型
+            String beanClassName = definition.getBeanClassName();
+            //MapperFactoryBean 构造器的参数为 mapper 接口类型
+            definition.getConstructorArgumentValues().addGenericArgumentValue(beanClassName);
+            //org.mybatis.spring.mapper.MapperFactoryBean
+            definition.setBeanClass(this.mapperFactoryBeanClass);
+          
+            boolean explicitFactoryUsed = false;
+      		//MapperScan中指定了SqlSessionTemplate，则explicitFactoryUsed = true
+          ...
+          //如果没指定SqlSessionTemplate，则按类型注入SqlSessionTemplate
+            if (!explicitFactoryUsed) {
+              LOGGER.debug(() -> "Enabling autowire by type for MapperFactoryBean with name '" + holder.getBeanName() + "'.");
+              definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+            }
+
+        }
+    }
+}
+```
+
+![image-20211111170030530](http://oss.jianzhang.site/images/20240611001128.png)
+
+```java
+public class MapperFactoryBean<T> extends SqlSessionDaoSupport implements FactoryBean<T> {
+    private Class<T> mapperInterface;
+    private boolean addToConfig = true;
+
+    public MapperFactoryBean() {
+    }
+
+    protected void checkDaoConfig() {
+        super.checkDaoConfig();
+
+        Configuration configuration = this.getSqlSession().getConfiguration();
+        if (this.addToConfig && !configuration.hasMapper(this.mapperInterface)) {
+            //添加mapper 代理工厂
+            configuration.addMapper(this.mapperInterface);
+        }
+
+    }
+
+    //通过此方法实例工厂bean，传入要生成代理对象的接口
+    public MapperFactoryBean(Class<T> mapperInterface) {
+        this.mapperInterface = mapperInterface;
+    }
+
+    //通过sqlSession获取代理对象
+    public T getObject() throws Exception {
+        return this.getSqlSession().getMapper(this.mapperInterface);
+    }
+
+    public Class<T> getObjectType() {
+        return this.mapperInterface;
+    }
+
+    public boolean isSingleton() {
+        return true;
+    }
+
+}
+```
+
+![image-20211110164204151](http://oss.jianzhang.site/images/20240611001151.png)
+
+`checkDaoConfig` 方法会在bean初始化后在`afterPropertiesSet` 里被调用，实际上是调用 `MapperRegistry.addMapper` ，添加代理工厂`MapperProxyFactory` 
+
+```java
+public <T> void addMapper(Class<T> type) {
+
+    this.knownMappers.put(type, new MapperProxyFactory(type));
+
+}
+```
+
+`MapperFactoryBean.getObject`  调用  `MapperRegistry.getMapper` ，最后通过 `MapperProxyFactory` 创建`MapperProxy`
+
+```java
+    public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
+        MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory)this.knownMappers.get(type);
+
+        return mapperProxyFactory.newInstance(sqlSession);
+    }
+
+```
+
+Mapper 接口的代理对象 `MapperProxy` ，通过 `MapperMethod` 调用 `SqlSessionTemplate`  -> `SqlSessionInterceptor`  -> `sqlSession`执行sql
+
+```java
+
+public class MapperProxy<T> implements InvocationHandler, Serializable {
+    private final SqlSession sqlSession;
+    private final Class<T> mapperInterface;
+    private final Map<Method, MapperMethod> methodCache;
+
+    public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethod> methodCache) {
+        this.sqlSession = sqlSession;
+        this.mapperInterface = mapperInterface;
+        this.methodCache = methodCache;
+    }
+
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+        MapperMethod mapperMethod = this.cachedMapperMethod(method);
+        return mapperMethod.execute(this.sqlSession, args);
+    }
+
+    private MapperMethod cachedMapperMethod(Method method) {
+        return (MapperMethod)this.methodCache.computeIfAbsent(method, (k) -> {
+            return new MapperMethod(this.mapperInterface, method, this.sqlSession.getConfiguration());
+        });
+    }
+}
+
+```
+
+```java
+
+public class SqlSessionTemplate implements SqlSession, DisposableBean {
+
+    private class SqlSessionInterceptor implements InvocationHandler {
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            //如果有事务，则从事务管理器中获取SqlSession，否则由sqlSessionFactory开启新的SqlSession
+            SqlSession sqlSession = getSqlSession(SqlSessionTemplate.this.sqlSessionFactory,
+                    SqlSessionTemplate.this.executorType, SqlSessionTemplate.this.exceptionTranslator);
+            try {
+                //调用sqlSession对应方法
+                Object result = method.invoke(sqlSession, args);
+                if (!isSqlSessionTransactional(sqlSession, SqlSessionTemplate.this.sqlSessionFactory)) {
+                    //没有配置事务，则立即提交当前sql操作，否则由事务管理器处理事务
+                    sqlSession.commit(true);
+                }
+                return result;
+            } catch (Throwable t) {
+            } finally {
+                if (sqlSession != null) {
+                    //没有事务则立即关闭
+                    closeSqlSession(sqlSession, SqlSessionTemplate.this.sqlSessionFactory);
+                }
+            }
+        }
+    }
+}
+
+```
+
+![image-20211111165335234](http://oss.jianzhang.site/images/20240611001253.png)
+
+# Sql 执行
+
+```java
+public class DefaultSqlSession implements SqlSession {  
+
+  @Override
+  public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
+    try {
+      //根据key从configuration中获取sql语句配置对象
+      MappedStatement ms = configuration.getMappedStatement(statement);
+      return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
+    } catch (Exception e) {
+      throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
+    } finally {
+      ErrorContext.instance().reset();
+    }
+  }
+
+}
+```
+
+![image-20211112190831641](http://oss.jianzhang.site/images/20240611001220.png)
+
+```java
+public class CachingExecutor implements Executor {
+	
+  @Override
+  public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+    //替换${...}的变量 ,#{...} 解析成jdbc的语句参数，用问号占位
+    BoundSql boundSql = ms.getBoundSql(parameterObject);
+    CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
+    return query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+  }
+
+}
+```
+
+![image-20211112190917737](http://oss.jianzhang.site/images/20240611001403.png)
+
+```java
+public class SimpleExecutor extends BaseExecutor {
+  
+	@Override
+  public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
+    Statement stmt = null;
+    try {
+      Configuration configuration = ms.getConfiguration();
+      //handler 中包含了ParameterHandler，ResultSetHandler
+      StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+      //获取数据库连接，返回jdbc的Statement,ParameterHandler 设置jdbc的sql参数
+      stmt = prepareStatement(handler, ms.getStatementLog());
+      //发送sql到数据库执行，ResultSetHandler解析sql结果转换成实体对象返回
+      return handler.<E>query(stmt, resultHandler);
+    } finally {
+      closeStatement(stmt);
+    }
+  }
+  
+}
+```
+
+![image-20211112191256092](http://oss.jianzhang.site/images/20240611001434.png)
+
+```java
+public class PreparedStatementHandler extends BaseStatementHandler {
+	@Override
+  public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
+    PreparedStatement ps = (PreparedStatement) statement;
+    //发送到数据库执行sql
+    ps.execute();
+    //解析返回结果
+    return resultSetHandler.<E> handleResultSets(ps);
+  }
+}
+```
+
+![image-20211112191323057](http://oss.jianzhang.site/images/20240611001450.png)

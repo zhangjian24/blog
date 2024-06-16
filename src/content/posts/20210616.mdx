@@ -1,0 +1,72 @@
+---
+title: 'ubuntu20.04设置静态ip'
+pubDate: 2021-08-07
+description: 'ubuntu20.04设置静态ip'
+author: 'jianzhang'
+image:
+    url: 'https://docs.astro.build/assets/full-logo-light.png'
+    alt: 'ubuntu20.04设置静态ip'
+tags: ["后端"]
+---
+
+在`virtualbox` 中安装了 `ubutnu20.04` 之后，想设置静态ip，并能够上外网，所以采用了 `网络地址转换(NAT)` 和 `仅主机(host-only)网路` 双网卡的形式。
+
+网卡1：
+
+![image-20210616221635160](http://oss.jianzhang.site/images/20240616221743.png)
+
+网卡2：
+
+![image-20210616221701407](http://oss.jianzhang.site/images/20240616221757.png)
+
+![image-20210616225140704](http://oss.jianzhang.site/images/20240616221811.png)
+
+ubuntu20.04 改成了使用 `netplan` 管理网络；配置文件在`/etc/netplan/*.yaml` 。
+
+首先查看虚拟机中网卡名：
+
+![image-20210616225045650](http://oss.jianzhang.site/images/20240616221829.png)
+
+然后配置静态ip，`sudo vim /etc/netplan/*.yaml`
+
+```yaml
+# Let NetworkManager manage all devices on this system
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    enp0s3:
+      dhcp4: yes
+      dhcp6: yes
+    enp0s8:
+      dhcp4: no
+      dhcp6: no
+      addresses: [192.168.x.5/24]
+      gateway4: 192.168.x.1
+      nameservers:
+        addresses: [8.8.8.8]
+```
+
+> enp0s3 开启DHCP 用于连接外网
+>
+> enp0s8 关闭DHCP 用于内网固定ip连接
+
+此时，会发现无法连接外网，原来是NetworkManager默认不管理出现在/etc/network/interfaces中的接口，所以可以通过修改NetworkManager的配置文件来改变这一默认设置，`sudo vim /etc/NetworkManager/NetworkManager.conf`
+
+```
+[main]
+plugins=ifupdown,keyfile
+
+[ifupdown]
+managed=true
+
+[device]
+wifi.scan-rand-mac-address=no
+```
+
+然后重启网络就正常了
+
+```
+sudo service network-manager restart
+```
+

@@ -1,0 +1,57 @@
+---
+title: 'Integer源码分析'
+pubDate: 2021-11-04
+description: 'Integer源码分析'
+author: 'jianzhang'
+image:
+    url: 'https://docs.astro.build/assets/full-logo-light.png'
+    alt: 'Integer源码分析'
+tags: ["后端"]
+---
+
+# `Integer` 类的常量
+
+`MIN_VALUE` ： -2<sup>31</sup> ， int 类型能够表示的最小值
+
+`MAX_VALUE` ：2<sup>31</sup> - 1 ， int 类型能够表示的最大值
+
+`TYPE` ：表示 int 类型的 class 实例
+
+`SIZE` ：32，用来以二进制补码形式表示 int 值的比特位数
+
+`BYTES` ：4，用来表示二进制补码形式的 int 值的字节数
+
+# `Integer` 类图
+
+![Integer](http://oss.jianzhang.site/images/20240616205227.png)
+
+# 主要方法
+
+`Integer#parseInt(String, int)` 方法，通过第一位字符判断正负，遍历每一位，乘以进制累加。
+
+![Integer.parseInt](http://oss.jianzhang.site/images/20240616205251.png)
+
+`IntegerCache` 内部类，缓存了`IntegerCache.low` 至 `IntegerCache.high` 的 Integer 对象，而`IntegerCache.low` 为-128，`IntegerCache.high` 默认为 127。
+
+`Integer#valueOf(int)` 方法，会先查询缓存，如果命中就返回缓存对象，否则 new 新对象。
+
+```java
+public static Integer valueOf(int i) {
+    if (i >= IntegerCache.low && i <= IntegerCache.high)
+        return IntegerCache.cache[i + (-IntegerCache.low)];
+    return new Integer(i);
+}
+```
+
+int 基本类型转换成 Integer 包装类型时，编译器编译后，会通过此 valueOf()方法转换，所以针对缓存范围内的装箱，每次返回的是同一个对象，超出缓存范围的，则每次返回不同的对象。
+
+```java
+Integer a = 20;
+Integer b = 20;
+System.out.println(a == b);//true
+
+Integer c = 200;
+Integer d = 200;
+System.out.println(c == d);//false
+
+```

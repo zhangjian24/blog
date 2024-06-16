@@ -1,0 +1,1371 @@
+---
+title: 'rust入门'
+pubDate: 2022-04-09
+description: 'rust入门'
+author: 'jianzhang'
+image:
+    url: 'https://docs.astro.build/assets/full-logo-light.png'
+    alt: 'rust入门'
+tags: ["后端"]
+---
+
+![rust入门.png](http://oss.jianzhang.site/images/20240609124740.png)
+
+# 简介
+
+rust 可以编写安全且高效的软件；
+
+使用场景：
+
+* 需要运行时速度
+* 需要保证内存安全
+* 需要充分利用多处理器
+
+与其他语言的比较：
+
+* c/c++拥有较高的性能，存在内存安全问题；
+* java/c# 通过GC来处理内存安全问题，但是性能差；
+
+擅长领域；
+
+* 高性能web service
+* WebAssembly
+* 命令行
+* 网络编程
+* 嵌入式设备
+
+# 通用概念
+
+## 变量与可变性
+
+### 变量
+
+```rust
+fn test20220409001(){
+    let a:i32 = 5;
+    let b = 6;
+    println!("The var : a={:?},b={:?}",a,b);
+}
+```
+
+使用 `let` 声明变量。变量右边通过 `:` 连接类型；
+编译器可以根据使用情况推断类型时可以省略类型；
+变量使用前必须初始化；
+变量默认不可变，在 `let` 后面 加 `mut` 关键字声明可变。
+
+```rust
+fn test20220409002(){
+    let a = "all right!";
+    println!("The var : a={:?}",a);
+    a = "yeah";
+    println!("The var : a={:?}",a);
+}
+```
+
+上面代码编译会报错：
+
+```bash
+-> src/main.rs:14:5
+   |
+12 |     let a = "all right!";
+   |         -
+   |         |
+   |         first assignment to `a`
+   |         help: consider making this binding mutable: `mut a`
+13 |     println!("The var : a={:?}",a);
+14 |     a = "yeah";
+   |     ^^^^^^^^^^ cannot assign twice to immutable variable
+
+For more information about this error, try `rustc --explain E0384`.
+error: could not compile `helloworld` due to previous error
+```
+
+声明可变：
+
+```rust
+fn test20220409002(){
+    let mut a = "all right!";
+    println!("The var : a={:?}",a);
+    a = "yeah";
+    println!("The var : a={:?}",a);
+}
+```
+
+可以声明一个与第一个同名的变量，此时第一个变量被第二个变量遮蔽，使用的是第二个变量。
+
+```rust
+fn test20220410001(){
+    let a = "aaa";
+    println!("a={:?}",a);
+    let a = 4;
+    println!("a={:?}",a);
+}
+//输出
+//a=aaa
+//a=4
+```
+
+### 常量
+
+通过 `const` 关键字声明，必须标明类型；
+
+永远不可变，不可以使用 `mut` 关键字；
+
+必须初始化，初始值必须是常量或常量表达式，不能是函数或运行时确定的值；
+
+常量可以声明在任何作用域，变量不能声明在全局作用域；
+
+变量可以被遮蔽，常量不能被遮蔽，即不能有相同的常量名；
+
+常量命名规范，使用大写字母和下划线；
+
+## 数据类型
+
+### 标量类型
+
+**整数类型**
+
+有符号的以 `i` 开头，无符号的以 `u` 开头；
+
+|长度|有符号|无符号|
+|:----|:----|:----|
+|8bit|i8|u8|
+|16bit|i16|u16|
+|32bit|i32|u32|
+|64bit|i64|u64|
+|128bit|i128|u128|
+|word|isize|usize|
+
+>word 表示机器字长，64位机器64bit，32位机器32bit 
+**整数字面值**
+
+|字面值|示例|
+|:----|:----|
+|十进制|76_87|
+|十六进制|0xef|
+|二进制|0b100101|
+|字节|b'A'|
+
+>除了字节外，其他的后面都可以跟类型 
+**整数溢出**
+
+在调试模式下，编译期遇到整数溢出，会报错；
+
+在发布模式下，编译期遇到整数溢出，会发生“环绕”：如果值设置为MAX+i,则会变成MIN+i;
+
+**浮点类型**
+
+`f32` 32位，单精度；
+
+`f64` 64位，双精度；
+
+**布尔类型**
+
+`bool` ,一个字节
+
+**字符类型**
+
+`char` ，4个字节，存储 `Unicode` 
+
+### 复合类型
+
+**元组**
+
+元组可以将多种类型的多个值放在一个类型里；
+
+元组长度固定，每个成员的类型固定；
+
+可以通过模式匹配解构元组；
+
+可以通过点标记法和索引号访问元组成员；
+
+```rust
+    let mut t = (1,"s",true);//定义元组
+    let (x,y,z) = t;//解构
+    t.1 = "9898";//下标
+
+    println!("t=>{:?},x=>{:?},y=>{:?},z=>{:?}",t,x,y,z);
+```
+
+**数组**
+
+数组元素类型必须相同；
+
+数组长度固定；
+
+数组得声明方式如下：
+
+```rust
+    let x:[i32;2] = [4,5];//直接列出元素
+    let y:[i32;3] = [x[0];3];//分号前面是元素值，后面是个数
+    println!("x=>{:?}；x=>{:?}",x,y);
+```
+
+输出：
+
+```bash
+x=>[4, 5]；x=>[4, 4, 4]
+```
+
+数组通过索引访问元素，超过范围会抛异常；
+## 函数
+
+函数由 `fn` 关键字、函数名、参数及其类型、返回值类型组成的函数签名定义。
+
+```rust
+fn main() {
+    let s = test_add(3,4);
+    println!("s={:?}",s);
+}
+fn test_add(a:i32,b:i32) -> i32 {
+   return a+b;
+}
+```
+
+函数没有返回值，则不声明返回值
+
+```rust
+fn test_add2(a:i32,b:i32) {
+    println!("{}",a+b);
+}
+```
+
+函数可以声明在函数内，内部函数只能在外部函数内使用
+
+```rust
+fn main() {
+    fn test_add3(a:i32,b:i32) -> i32 {
+        return a+b;
+     }
+
+    let s = test_add3(3,4);
+    println!("s={:?}",s);
+}
+```
+
+函数返回值，有两种方式：
+* 使用 `return` 语句;
+* 返回最后执行的计算表达式结果；
+
+```rust
+fn testadd4(a:i32,b:i32) -> i32 {
+    a+b
+}
+
+//加分号了就不是表达式，报错
+// fn testadd5(a:i32,b:i32) -> i32 {
+//     a+b;
+// }
+```
+
+`语句` 执行操作而不返回值，`表达式` 计算并产生一个值；表达式末尾加 `;` 转换成语句。
+
+## 流程控制
+
+### 流程控制结构
+
+* `if` 结构
+* `loop` 循环
+* `while` 循环
+* `for` .. `in` 迭代
+
+这些结构都是表达式，`if` 和 `loop` 可以指定返回值
+
+#### `if` 结构
+
+```rust
+fn test_max(a: i32, b: i32) -> i32 {
+    if a > b {
+        a
+    } else {
+        b
+    }
+}
+```
+
+`if` 结构可以有返回值，赋值给其他变量；需要遵循一定原则：
+* 分支最后一行代码必须是表达式，结尾不能有分号；
+* 每个分支的返回值类型相同；
+* 必须要有 `else` 分支。
+
+#### `loop` 循环
+
+```rust
+let mut x = 0;
+let a = loop {
+  x += 1;
+  if x == 5 {
+    break x;    // 返回跳出循环时的x，并赋值给变量a
+  }
+  if x % 2 == 0 {
+    continue;
+  }
+  println!("{}", x);
+};
+println!("var a: {:?}", a); // 输出 var a: 5
+```
+
+`loop` 循环中，`break` 可以指定返回值，所以 `loop` 可以赋值给变量，其他循环不具备这个特性；
+
+####  `label` 标签
+
+可以为 `loop` 、`while` 、`for` 指定标签，在 `break` 、`continue` 语句中指定标签来确定要跳出哪一层循环。
+
+```rust
+#![allow(unused)]
+fn main() {
+let x = 'outer: loop {
+  'inner: while true {
+    break 'outer 3;
+  }
+};
+
+println!("{}", x);   // 3
+}
+```
+
+# 所有权
+
+其他语言管理内存的是程序员手动管理或者通过垃圾收集机制在运行时不断寻找不再使用得内存；
+`rust` 通过所有权系统管理内存，在编译时检查内存使用规则，运行时不会增加额外得开销。
+**stack 与heap**
+stack 压入数据比heap上分配快：
+* stack中压入数据始终在栈顶
+* heap分配首先需要寻找足够的空间，还要进行记录使用情况；
+
+heap中的数据访问比stack访问慢得多：
+* heap中的数据需要通过stack中得指针，再寻址到heap中得数据；
+* heap中数据存放比较分散；
+
+**所有权规则**
+* 每个值都会绑定到一个变量，该变量是该值的所有者；
+* 每个值只能有一个所有者；
+* 当所有者超出作用域时，对应的值会被释放；
+
+**移动(move)**
+stack上分配的数据，在变量赋值给另一个变量时，会复制一份副本；
+heap上分配的数据，在变量赋值给另一个变量时，会发生所有权的移动，源变量会失效；
+
+```rust
+    let a="123";
+    let b = a;
+    let x = String::from(a);
+    let y = x;
+
+    println!("a=>{:?},b=>{:?},x=>{:?},y=>{:?}",a,b,x,y);
+  |
+6 |     let x = String::from(a);
+  |         - move occurs because `x` has type `String`, which does not implement the `Copy` trait
+7 |     let y = x;
+  |             - value moved here
+8 | 
+9 |     println!("a=>{:?},b=>{:?},x=>{:?},y=>{:?}",a,b,x,y);
+  |                                                    ^ value borrowed here after move
+```
+
+> a赋值给b时，复制了一份副本，所以a,b都有效；x赋值给y时，发生了移动，只有y绑定到String，x失效，所以报错；离开作用域时，x失效了，不会有释放对应内存的操作，y对应的heap数据会被释放， 
+函数的传参和返回值，跟变量赋值遵循一样的规则发生复制和移动。
+
+**引用和借用**
+
+在函数传参时，heap数据会发生移动，主调函数在调用后还想使用该数据的话，就需要在被调函数结束时返回所有权，这种情况可以向被调函数传递引用，而不获得所有权，从而避免归还所有权的操作。通过引用传参的形式称为借用。
+
+```rust
+fn main() {
+    let a=String::from("123");
+
+    println!("s=>{:?}",ln(&a));
+    println!("a=>{:?}",a);
+}
+
+fn ln(s:&String)->usize{
+    s.len()
+}
+```
+
+通过 `&` 取得a的引用传递给函数ln a变量的所有权没有发生转移，输出如下
+
+```bash
+s=>3
+a=>"123"
+```
+
+引用默认不可变，如果需要在函数ln中修改a对应的数据，需要传入可变引用；
+
+```rust
+fn main() {
+    let mut a =String::from("123");
+
+    println!("s=>{:?}",a);
+    append(& mut a);
+    println!("a=>{:?}",a);
+}
+
+fn append(s:& mut String){
+    s.push_str("number");
+}
+```
+
+通过添加mut关键字创建可变引用，输出如下：
+
+```bash
+s=>"123"
+a=>"123number"
+```
+
+对引用的一些限制：
+* 同一个作用域，不能存在多个可变引用；
+* 同一个作用域，不能存在可变引用和不可变引用；
+* 同一个作用域，可以存在多个都是不可变的引用；
+
+**切片**
+
+切片就是指向某个数据中一部分内容的引用；
+
+# 结构体(struct)
+
+**定义**
+
+用 `struct` 关键字定义结构体
+
+```rust
+fn main() {
+    let r = Rec { x: 1, y: 2 };
+
+    println!("x=>{:?}",r.x);
+}
+
+struct Rec {
+    x: u32,
+    y: u32,
+}
+```
+
+struct实例默认不可变，所有字段也是不可变的；
+如果用 `mut` 将struct实例变成可变的，则所有的字段也变成可变的；
+
+如果赋值给字段的变量名和字段名一样，可以简写；
+
+可以通过更新语法，用同类型的一个实例初始化另一个实例的部分字段；
+
+```rust
+fn main() {
+    let x = 3;
+
+    let r = Rec { x: 1, y: 2 };
+
+    let mut r2 = Rec {
+        x,//简写
+        ..r//更新剩余的字段
+    };
+
+    println!("x=>{:?},y=>{:?}", r2.x, r2.y);
+}
+
+struct Rec {
+    x: u32,
+    y: u32,
+}
+//print
+//x=>3,y=>2
+```
+
+**元组结构体**
+
+想给元组起名，不同于其他元组，或者不关注结构体中字段名，可以用元组结构体；
+
+```rust
+fn main() {
+    let x = 3;
+
+    let r = Rec(1, 2);
+
+    let mut r2 = Rec(x, r.1);
+
+    println!("x=>{:?},y=>{:?}", r2.0, r2.1);
+}
+
+struct Rec(u32, u32);
+```
+
+**结构体方法**
+
+结构体方法和函数类似，不同之处在于：
+
+* 方法在结构体上下文 `impl` 快中定义；
+* 第一个参数是self,表示调用的结构体实例，它可以是变量、引用、可变引用；
+
+```rust
+fn main() {
+    let r = Rec(1, 2);
+    println!("x=>{:?},y=>{:?}", r.0, r.1);
+    println!("area=>{:?}", r.area());
+}
+
+struct Rec(u32, u32);
+
+impl Rec {
+    fn area(&self) -> u32 {
+        self.0 * self.1
+    }
+}
+```
+
+输出
+
+```bash
+x=>1,y=>2
+area=>2
+```
+
+**关联函数**
+
+定义在 `impl` 块里面，但是不把self作为第一个参数；
+
+```rust
+fn main() {
+    let r = Rec(1, 2);
+    println!("x=>{:?},y=>{:?}", r.0, r.1);
+    println!("area=>{:?}", r.area());
+
+    let s = Rec::square(4);
+    println!("x=>{:?},y=>{:?}", s.0, s.1);
+    println!("area=>{:?}", s.area());
+}
+
+struct Rec(u32, u32);
+
+impl Rec {
+    fn area(&self) -> u32 {
+        self.0 * self.1
+    }
+}
+
+impl Rec {
+    fn square(x: u32) -> Rec {
+        Rec(x, x)
+    }
+}
+```
+
+方法和关联函数都可以定义在不同的 `impl`块中，输出：
+
+```bash
+x=>1,y=>2
+area=>2
+x=>4,y=>4
+area=>16
+```
+
+# 枚举
+
+枚举用 `enum` 关键字定义
+
+```rust
+enum Shape{
+    Garden,
+    Square,
+    Triangle,
+}
+```
+
+枚举值可以绑定数据，枚举也可以定义方法
+
+```rust
+fn main() {
+    let g = Shape::Garden { radius: 5};
+    println!("{}",g.area());
+    let s = Shape::Square(3,4);
+    println!("{}",s.area());
+    let t = Shape::Triangle(3,4,5);
+    println!("{}",t.area());
+}
+
+enum Shape{
+    Garden{radius:u32},
+    Square(u32,u32),
+    Triangle(u32,u32,u32)
+}
+
+impl Shape {
+    fn area(&self)->f32{
+        ...
+    }
+}
+```
+
+在 java 语言中，变量有可能是空值，很容易产生空指针异常，rust中，要求每个变量都要有值，并且提供 Option 枚举来处理空值的情况,明确表示有可能为空值的情况。
+
+```rust
+fn main() {
+    let s:Option<i32> = Option::Some(4);
+    let t:Option<i32> = Option::None;
+}
+```
+
+# 模式匹配
+
+模式匹配，允许一个值与多个模式匹配，并执行匹配的模式对应得代码；
+
+```rust
+fn main() {
+    let g = Shape::Garden { radius: 5};
+    println!("{}",g.area());
+    let s = Shape::Square(3,4);
+    println!("{}",s.area());
+    let t = Shape::Triangle(3,4,5);
+    println!("{}",t.area());
+}
+
+enum Shape{
+    Garden{radius:u32},
+    Square(u32,u32),
+    Triangle(u32,u32,u32)
+}
+
+impl Shape {
+    fn area(&self)->f32{
+        match self {
+            Shape::Garden{radius}=>std::f32::consts::PI*((radius*2) as f32),
+            Shape::Square(x,y)=>(x+y) as f32,
+            _=>0_f32,
+        }
+    }
+}
+```
+
+通过 `match` 关键字进行模式匹配时，需要穷举所有可能；
+可以用下划线代替余下的所有可能，放在最后；
+
+如果只关注其中一种情况，可以使用 `if let` ；
+
+```rust
+fn main() {
+    let s:Option<i32> = Option::Some(4);
+
+    if let Some(v) = s {
+        println!("{}",v);
+    }
+
+}
+```
+
+# 代码组织
+
+rust的模块系统
+
+* Package(包)，cargo特性，包含多个单元包
+* Crate(单元包)，可以生成一个libary或可执行文件
+* Module(模块)，组织和控制代码的作用域
+* Path(路径)，结构体、函数、模块等的命令方式
+
+**单元包**
+
+cargo 是rust 的包管理系统，遵循如下惯例：
+
+可以有一个libary crate 对应 src/lib.rs，名字与package 名字相同。
+
+可以有多个binary crate ，默认的对应src/main.rs，名字与package 名字相同；其余的在src/bin目录下，每个文件对应一个crate;
+
+![图片](http://oss.jianzhang.site/images/20240609124917.png)
+
+
+**模块**
+
+一个crate内，通过模块将代码分组，增加可读性和复用性，控制代码的私有性，可以嵌套。
+
+src/lib.rs 文件内容：
+
+```rust
+pub mod show{
+    pub fn println(i:i32){
+        println!("{}",i);
+    }
+}
+```
+
+模块中代码默认私有，使用 `pub` 关键字公开；
+子模块可以访问父模块的私有代码，父模块无法访问子模块私有代码。
+
+src/main.rs 文件内容：
+
+```rust
+fn main() {
+    let s:Option<i32> = Option::Some(4);
+
+    if let Some(v) = s {
+        helloworld::show::println(v);
+    }
+
+}
+```
+
+src/lib.rs 对应的crate 名字和项目包名相同，引用时以crate开始，`::` 分割形成路径；
+同一个包中，crate名可以省略；
+
+可以用 `use` 关键字 导入命名空间，在多次引用同一个模块代码时，避免重复写前缀。
+
+# 集合
+
+**Vector**
+
+Vec，叫做Vector
+
+* 可以存储多个值
+* 连续存储在堆上
+* 只能存储相同类型的值
+
+```rust
+fn main() {
+    let mut v = Vec::new();
+    v.push(4);
+
+    println!("{}",v[0]);
+
+    //越界会返回None
+    if let Some(i) = v.get(1) {
+        println!("{}",i);
+    }
+
+    //会抛越界异常
+    // println!("{}",v[1]);
+}
+```
+
+**String**
+
+String是Byte 集合
+
+```rust
+fn main() {
+    let mut s = String::new();
+    let mut s2 = String::from("hello");
+    s.push(' ');
+    s.push_str("world");
+    s2 = s2+&s;//等同于s2.add(&s),s2传入后所有权转入函数内
+
+    let s3 = format!("{}-{}",s2,s);//字符串拼接，不会获取参数所有权
+
+    println!("{}",s);
+    println!("{}",s2);
+    println!("{}",s3);
+
+    let len1 = s3.len();
+    let len2 = String::from("求其上这得其中").len();//String 是对Vec<u8>进行UTF-8编码的包装，len()方法返回得字节数
+    println!("{}",len1);
+    println!("{}",len2);
+}
+```
+
+**HashMap**
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let mut h = HashMap::new();
+    h.insert("s",2);
+
+    if let Some(i) = h.get("s") {
+        println!("{}",i);
+    }
+
+    for (k,v) in &h {
+        println!("{},{}",k,v);
+    }
+}
+```
+
+# 错误处理
+
+错误包括：
+
+* 可恢复的错误，Result
+* 不可恢复的错误，panic!宏
+
+不可恢复的错误panic发生时：
+
+* 打印错误信息
+* 展开、清理调用栈
+* 退出程序
+
+为了减小panic时的工作量和执行文件的大小，可以设置程序直接终止而不清理调用栈，留给OS清理，可以在 `cargo.toml` 中设置：
+
+>panic="abort" 
+可恢复错误Result
+
+* 成功时返回 Ok
+* 失败返回Err
+
+```rust
+use std::fs::File;
+use std::io::ErrorKind;
+
+fn main() {
+    let f = File::open("ssdsds.txt");
+    let fi = match f {
+        Ok(fc)=>fc,
+        Err(e)=> match e.kind() {
+            ErrorKind::NotFound=> match File::create("ssdsds.txt") {
+                Ok(nf)=>nf,
+                Err(_)=>panic!("create failed")
+            },
+            _ =>panic!("err")
+        }
+    };
+}}
+    };
+}
+```
+
+`?` 表达式，如果返回的是Ok,则将Ok中的数据赋值给变量，如果是Err则当前函数返回Err，需要当前函数声明为返回Result类型。
+Result.unwrap()，当Ok时，返回Ok中的数据，当Err时panic。
+
+# 泛型
+
+**函数中得泛型**
+
+```rust
+use std::fmt::Display;
+
+fn main() {
+    show(3);
+}
+
+fn  show<T:Display>(s:T){
+    println!("{:?}",s.to_string());
+}
+```
+
+**结构体和枚举中的泛型**
+
+如 `Option<T>`
+
+**方法中的泛型**
+
+```rust
+fn main() {
+    let b = Bx{s:String::from("hahaha")};
+
+    b.show();
+}
+
+struct Bx<T>{
+    s:T
+}
+
+impl <T> Bx<T> {
+    fn get(&self)->&T{
+        return &self.s;
+    }
+
+     //方法特有的泛型，需要在方法名后声明
+    fn comb<U>(&self,
+m:&U){
+    }
+}
+//特定类型才有的方法
+impl Bx<String> {
+    fn show(&self) {
+        println!("{}",self.s);
+    }
+}
+```
+
+# trait
+
+trait定义抽象的行为；
+
+```rust
+use std::fmt::Display;
+
+fn main() {
+    let p = Point{x:3,y:4};
+    p.print();
+    p.hello();
+    p.print0(8);
+    p.print1(9);
+}
+
+trait  Show {
+    fn print(&self);
+
+    //默认实现
+    fn hello(&self){
+        println!("hello")
+    }
+}
+
+struct Point{
+
+x:u32,
+    y:u32,
+}
+//为结构体实现Trait
+impl Show for Point {
+    fn print(&self) {
+        println!("{},{}",self.x,self.y)
+    }
+}
+
+impl Point {
+     //参数的Trait 约束
+    fn print0(&self,z:impl Display+Blank){
+        println!("{},{},{}",self.x,self.y,z);
+    }
+
+    //参数的Trait 约束，用泛型放在方法名
+    fn print1<T:Display+Blank>(&self,z:T){
+        println!("{},{},{}",self.x,self.y,z);
+    }
+
+    //参数的Trait 约束，用where关键字放在返回值后面
+    fn format<T>(&self,z:T) -> String
+    where T:Display+Blank
+    {
+        format!("{},{},{}",self.x,self.y,z)
+    }
+}
+```
+
+# 生命周期
+
+下面代码中变量的x从第2行到第9行有效，变量y从第4行到第7行有效，第6行打印x没有问题，但是第8行会报错，因为第5行x指向了y的引用，第6行y有效，第7行以后y就失效了，x变成了垂悬引用，这是不允许的。
+
+```rust
+fn main(){
+    let x;
+    {
+        let y = 3;
+        x = &y;
+        println!("{}",x);
+    }
+    println!("{}",x);
+}
+```
+
+在函数内部编译器可以分析变量的生命周期，针对函数返回的引用，可以用生命周期标注 避免垂悬引用。
+```rust
+fn longest(s1:&str,s2:&str)->String{
+    if s1.len()>s2.len() {
+        String::from(s1)
+    }else {
+        String::from(s2)
+    }
+}
+
+fn longest2<'a>(s1:&'a str,s2:&'a str)->&'a str{
+    if s1.len()>s2.len() {
+        s1
+    }else {
+        s2
+    }
+}
+```
+
+如果函数返回得是有所有权的变量，则无需生命周期标注；
+返回的是引用，则需要用生命周期标注，约束返回值的生命周期要小于s1和s2的声明周期交集。
+
+# 测试
+
+单元测试，给函数添加 `#[test]` 标注，就将其声明为测试函数
+
+```rust
+fn main(){
+    println!("main run");
+}
+#[test]
+#[should_panic]
+fn test_fn(){
+    assert!(true);
+    assert_eq!(2,3);
+    assert_ne!(3,4);
+}
+```
+
+cargo test 可以运行单元测试
+可以用 `assert!`、`assert_eq!`、`assert_ne!` 宏进行断言。
+
+可以用  `#[should_panic]` 声明测试函数预期应该panic。
+
+可以将测试函数放到模块中，用  `#[cfg(test)]` 标注该模块是测试模块，只在测试时进行编译。
+
+# 函数式语言特性
+
+## 闭包
+
+闭包，是可以捕获其所在环境的匿名函数。
+
+闭包：
+
+* 是匿名函数
+* 可以保存为变量，作为参数
+* 可以从定义它的作用域捕获值
+
+示例中，sq为一个闭包，传入i32返回i32
+
+```rust
+fn main(){
+    let sq = |x:i32|->i32{
+        x*x
+    };
+
+    println!("{}",sq(2));
+}
+```
+
+闭包参数和返回值的类型可以由编译器推断出来，此时可以省略类型。
+# 构建发布
+
+cargo 中发布有两个配置：
+
+* dev 用于开发构建， `cargo build` 
+* release用于生产环境，  `cargo build --release` 
+
+可以在cargo的配置文件  `cargo.toml` 覆盖默认的配置：
+
+```rust
+[package]
+name = "helloworld"
+version = "0.1.0"
+edition = "2021"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+
+#覆盖默认配置
+[profile.dev]
+opt-level=1
+
+[profile.release]
+
+```
+
+rust 代码中用  `///` 开始文档注释，支持markdown，可以通过  `cargo doc` 在  `target/doc` 生成html 文档；
+
+```rust
+pub mod show{
+    /// 打印
+    /// # 示例
+    /// 
+    /// use helloworld::show;
+    /// show::println(3);
+    /// 
+    ///
+    pub fn println(i:i32){
+        println!("{}",i);
+    }
+}
+```
+
+使用  `cargo test` 命令时，可以对文档中得示例代码执行测试。
+发布包到  `cartes.io` ，需要先在  `cartes.io` 网站注册用户，获得token，然后执行命令；
+
+```rust
+cargo login [token]
+cargo public
+```
+
+发布之后，可以用  `cargo yank --vers 1.1.0 --undo` 撤销发布，使得已经依赖此包的项目可用，新项目不可以下载此包。
+# 智能指针
+
+智能指针通常是struct，并且实现了Deref Trait 和 Drop Trait；Deref Trait 使智能指针可以像引用一样解引用，Drop Trait 允许智能指针走出作用域时执行自定义的代码。
+
+`Box<T>` 智能指针：
+
+* 将数据存储在Heap上
+Rc引用计数智能指针，使一份数据可以被多个所有者持有；在没有所有者持有时，自动清理内存；所有者持有的是不可变引用。
+
+```rust
+use std::rc::Rc;
+fn main(){
+    let b = Rc::new(String::from("hello world"));
+    println!("{}",Rc::strong_count(&b));//1
+    {
+        let c = b.clone();
+        println!("{}",Rc::strong_count(&b));//2
+    }
+    println!("{}",Rc::strong_count(&b));//1
+}
+```
+
+通常的借用规则在编译期进行检查，rust 提供了 `RefCell<T>` 智能指针，延迟到了运行时检查借用规则。
+>借用规则：一份数据，在一个作用域，要么只能拥有一个可变引用，要么多个不可变引用。
+不同时期检查借用规则的比较：
+
+|编译期|运行期|
+|:----|:----|
+|没有运行时开销|借用计数，产生性能损耗|
+|rust默认行为，严格保守|特定场景，灵活|
+
+```rust
+use std::cell::RefCell;
+fn main(){
+    let s = String::from("hello ");
+    let b = RefCell::new(s);
+    b.borrow_mut().push_str(" world");
+    println!("{}",b.borrow());
+}
+```
+
+# 并发
+
+创建线程，可以通过  `std::thread::spawn()` 函数，传入闭包创建并运行线程，返回  `JoinHandle` ，通过JoinHandle.join()阻塞主调线程，等待持有的线程运行完成，再继续主调线程。
+
+```rust
+use std::thread;
+use std::time::Duration;
+fn main(){
+    let h = thread::spawn(||{
+        for i in 0..10 {
+            println!("child thread: {}",i);
+            thread::sleep(Duration::from_millis(1));
+        }
+    });
+    for j in 0..5 {
+        println!("main thread: {}",j);
+        thread::sleep(Duration::from_millis(1));
+    }
+    h.join().unwrap();//阻塞主线程，等待子线程运行完成再继续运行。
+}
+```
+
+当在子线程中使用主线程的数据时，子线程的生命周期可能比数据的生命周期更长，所以要用move 闭包将数据的所有权转移到子线程内，此时主线程中的变量就失效了。
+
+```rust
+use std::thread;
+use std::time::Duration;
+fn main(){
+    let n = 10;
+    let h = thread::spawn(move||{
+        for i in 0..n {
+            println!("child thread: {}",i);
+            thread::sleep(Duration::from_millis(1));
+        }
+    });
+    for j in 0..5 {
+        println!("main thread: {}",j);
+        thread::sleep(Duration::from_millis(1));
+    }
+    h.join().unwrap();//阻塞主线程，等待子线程运行完成再继续运行。
+}
+```
+
+## 线程间传递数据
+
+rust中通过Channel 来进行线程中得消息传递，Channel 包含多个发送端、一个接收端，其中一端关闭Channel就关闭。
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+fn main(){
+    let (sender,receiver) = mpsc::channel();
+    thread::spawn(move||{
+        sender.send("hhahahha").unwrap();
+    });
+    let s = receiver.recv().unwrap();
+    println!("{}",s);
+}
+```
+
+ `mpsc::channel()` 创建管道，返回发送端和接收端；
+发送端的send()方法发送数据，返回Result，如果接收端关闭就会返回错误，该方法会转移参数的所有权；
+
+接收端的recv() 方法阻塞当前线程直到有数据传过来返回Result，如果发送端关闭就会返回错误。
+
+接收端的try_recv()方法不会阻塞当前线程，有数据就返回Ok包裹的数据，否则返回错误。
+
+## 线程间共享状态
+
+```rust
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::Duration;
+fn main(){
+    let num = Arc::new(Mutex::new(0));//共享数据
+    let mut hs = vec![];
+    for _ in 0..5 {
+        let nx = num.clone();//获得新的所有权
+        let h = thread::spawn(move||{
+            let mut n = nx.lock().unwrap();//获得锁
+            *n +=1;//计数
+            thread::sleep(Duration::from_millis(1));
+        });
+        hs.push(h);
+    }
+    for x in hs {
+        x.join().unwrap();
+    }//等待子线程
+    println!("{}",num.lock().unwrap());//5
+}
+```
+
+Rust中通过  `Mutex` 保证多线程对共享数据的互斥访问， `Mutex.lock()` 阻塞当前线程直到获得锁。 
+例子中，有多个线程需要获得共享数据的所有权，所有就需要多重所有权的智能指针  `Arc` ，其API和  `Rc` 一样，不同的是  `Arc` 是线程安全的。
+
+# 面向对象特性
+
+泛型中Trait约束，编译器会进行单态化，限定为具体的类型，用  `Trait` 对象可以存储不同类型的对象。
+
+```rust
+fn main(){
+    let mut v:Vec<Box<dyn Draw>> = vec![];
+    let a = A{};
+    v.push(Box::new(a));
+    let b = B{};
+    v.push(Box::new(b));
+    for x in v {
+        x.draw();
+    }
+}
+trait Draw{
+    fn draw(&self);
+}
+struct A{
+}
+impl Draw for A {
+    fn draw(&self) {
+    }
+}
+struct B{
+}
+impl Draw for B {
+    fn draw(&self) {
+    }
+}
+```
+
+# 高级特性
+
+## 关联类型
+
+关联类型，在Trait 中使用类型占位符，由实现者去确定具体的类型。
+
+与泛型不同的是，在一个实现者中，泛型可以实现多次，而关联类型只能实现一次。
+
+```rust
+fn main(){
+}
+trait Visit<T>{
+    fn get(&self)->T;
+}
+struct A{
+}
+impl Visit<i32> for A {
+    fn get(&self) -> i32 {
+        3
+    }
+}
+impl Visit<f64> for A {
+    fn get(&self) -> f64 {
+        3.8
+    }
+}
+trait Visit2{
+    type Tyy;//声明关联类型
+    fn get(&self)-> Self::Tyy;//后面的Self 的S大写，代表具体实现者类型
+}
+struct B{
+}
+impl Visit2 for B {
+    type Tyy = i32;//指明具体的关联类型
+    fn get(&self) -> i32 {
+        3
+    }
+}
+```
+ 
+## 运算符重载
+
+ `std::ops`  下面定义的运算符，可以被重载，只要实现对应得Trait。
+
+```rust
+use std::cell::RefCell;
+use std::ops::Add;
+fn main(){
+    let s1 = S{s:RefCell::new(String::from("hello "))};
+    let s2 = S{s:RefCell::new(String::from("world"))};
+    let s1 = s1+s2;
+    println!("{}",s1.s.borrow());
+}
+struct S{
+    s:RefCell<String>
+}
+impl Add<S> for S {
+    type Output = S;
+    fn add(self, rhs: S) -> Self::Output {
+        self.s.borrow_mut().push_str(& rhs.s.borrow());
+        self
+    }
+}
+```
+
+## 泛型默认值
+
+泛型可以指定默认值，见  `std::ops::Add` 源码，Rhs 默认为Self
+
+```rust
+pub trait Add<Rhs = Self> {
+    type Output;
+    fn add(self, rhs: Rhs) -> Self::Output;
+}
+
+```
+
+## 全限定名调用同名方法
+
+```rust
+
+fn main(){
+    let a = A{};
+    a.show();//A
+    I::show(&a);//IA
+}
+trait I{
+    fn show(&self){
+        println!("I");
+    }
+}
+struct A{
+}
+impl I for A {
+    fn show(&self) {
+        println!("IA");
+    }
+}
+impl A {
+    fn show(&self){
+        println!("A");
+    }
+}
+```
+
+## 通过SuperTrait 声明当前Trait 依赖的Trait
+
+```rust
+fn main(){
+    let a = A{s:String::from("hello")};
+    a.show();
+    I::show(&a);
+}
+trait I :ToString{
+    fn show(&self);
+}
+struct A{
+    s:String
+}
+impl I for A {
+    fn show(&self) {
+        println!("{}",self.to_string());
+    }
+}
+impl ToString for A {
+    fn to_string(&self) -> String {
+        self.s.clone()
+    }
+}
+impl A {
+    fn show(&self){
+        println!("A");
+    }
+}
+```

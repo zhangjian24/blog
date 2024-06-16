@@ -1,0 +1,543 @@
+---
+title: 'ffmpeg使用教程'
+pubDate: 2021-11-01
+description: 'ffmpeg使用教程'
+author: 'jianzhang'
+image:
+    url: 'https://docs.astro.build/assets/full-logo-light.png'
+    alt: 'ffmpeg使用教程'
+tags: ["后端"]
+---
+
+# 发展历史
+
+- 法国，2000年，初版
+- 2004，另外人接手，开始丰富
+- 2011，新创Libav项目
+- 2015，ffmpeg 与Libav合并
+
+
+
+# 基础知识
+
+## 音频
+
+### 裸数据格式
+
+音频的裸数据格式就是脉冲编码调制（Pulse Code Modulation，PCM）数据
+
+- 量化格式（sampleFormat）：指记录声音的动态范围，它以位(Bit)为单位
+
+- 采样率（sampleRate）：记录声音时每秒的采样个数，它用赫兹(Hz)来表示。
+
+- 声道数（channel）
+
+数据格式
+
+- PCM 音频裸数据
+- WAV 在音频裸数据前面，加了文件头
+
+### 音频编码
+
+主要是为了在降低带宽负担的同时为视频腾出更多带宽空间
+
+- MP3
+
+  - 码率>128，表现优异
+
+- AAC
+
+  - 码率 &lt 128，表现优异
+
+- OGG
+
+  - 低码率，高音质
+
+  - 兼容性不好
+
+  - 适用于语音聊天
+
+## 图像
+
+像素(Pixel)：图像显示的基本单元
+
+每英寸像素(PPI)：理论上屏幕 PPI 越高，屏幕就越精细，画质相对就更出色
+
+颜色表示：R、G、B 也被称为 “**基色分量**”。它们的取值分别从 0 到 255，一共256个等级（256时2的8次方）。所以任何颜色都可以 R、G、B 三个值的组合来表示
+
+YUV：主要是因为RGB信号不利于压缩；我们可以把更多带宽留给黑—白信号（被称作“亮度”），将稍少的带宽留给彩色信号（被称作“色度”）；其中 "Y" 表示明亮度（Lumina nce 或 Luma），也就是灰阶值；而 "U" 和 "V" 表示的则是色度（Chrominance 或 Chroma），作用是描述影像色彩及饱和度，用于指定像素的颜色。
+
+静态压缩：图片空间上的冗余，相同像素
+
+## 视频
+
+视频由一些列图片组成，每一张称之为帧
+
+冗余信息
+
+- 时间冗余
+
+  - 帧间编码
+
+    - 运动补偿
+
+    - 运动表示
+
+    - 运动估计
+
+- 空间冗余
+
+  - 帧内编码
+
+编码
+
+![视频编解码IBP帧](http://oss.jianzhang.site/images/20240616210057.png)
+
+帧率(FPS)：每秒多少帧画面
+
+IPB帧
+
+- I帧
+  - 独立帧
+
+- P帧
+  - 前向预测帧
+  - 依赖前面I帧或P帧
+
+- B帧
+
+  双向预测帧，依赖：
+
+  - 前面I帧或P帧
+
+  - 后面的P帧
+
+- IDR帧
+
+  - H264采用多帧预测，P帧可能参考I帧之前的帧
+
+  - IDR之后的帧，只会参考IDR帧之后的帧
+
+- DTS和PTS
+
+  - https://mp.weixin.qq.com/s/u3VCyoV7hMFfau3Rks5z6Q
+
+  - DTS解码时间
+
+  - PTS播放时间
+
+  - 没有B帧的情况下，DTS=PTS
+
+  - 有B帧的情况下，DTS就与PTS不一样
+
+- GOP
+
+  - 两个I帧之间的一组图片
+
+# 命令行
+
+## 命令组成
+
+![img](http://oss.jianzhang.site/images/20240616210138.png)
+
+## help 信息
+
+- 查看支持的文件格式
+
+  ```
+  ffmpeg -formats
+  ```
+
+  ![image-20210824213540023](http://oss.jianzhang.site/images/20240616210201.png)
+
+  第一列支持的编解码器
+
+  第二列格式名称
+
+  第三列描述
+
+- 查看支持的编解码器
+
+  ```
+  ffmpeg -codecs
+  ```
+
+  ![image-20210824213749383](http://oss.jianzhang.site/images/20240616210249.png)
+
+  ![image-20210824213833962](http://oss.jianzhang.site/images/20240616210320.png)
+
+- 查看支持的编码器
+
+  ```
+  ffmpeg -encoders
+  ```
+
+- 查看支持的编码器
+
+  ```
+  ffmpeg -decoders
+  ```
+
+- 查看支持的滤镜
+
+  ```
+  ffmpeg -filters
+  ```
+
+  ![image-20210824214223265](http://oss.jianzhang.site/images/20240616210343.png)
+
+  ![image-20210824214351622](http://oss.jianzhang.site/images/20240616210406.png)
+
+- 查看不同模块支持的参数
+
+  ```
+  ffmpeg.exe -h muxer=flv
+  ```
+
+  ![image-20210824214853811](http://oss.jianzhang.site/images/20240616210429.png)
+
+- 
+
+## 转封装
+
+### flv
+
+```
+ffmpeg -i X王子.BD1280高清中字版.mp4 -q 0 tt.flv
+```
+
+### m3u8
+
+- 由文件切片和目录文件组成
+
+  ![image-20210824224848188](http://oss.jianzhang.site/images/20240616211228.png)
+
+  - EXTM3U 必须包含的标签，用于标识m3u8文件
+
+  - EXT-X-VERSION 指示版本
+
+  - EXT-X-TARGETDURATION 列表中最常分片时长
+
+  - EXT-X-MEDIA-SEQUENCE 当前应该播放的分片序号
+
+  - EXTINF 列表中每个分片的时长
+
+  - EXT-X-ENDLIST 表明列表文件不再更新
+
+```
+ffmpeg -re -i X王子.BD1280高清中字版.mp4 -c copy -f hls out.m3u8
+```
+
+### 文件切片
+
+- 按时长切分
+
+  ```bash
+  ffmpeg -i Paw.Patrol.aac -f segment -segment_time 60 -c copy  Paw.Patrol_%02d.aac
+  ```
+
+  segment ：切片
+
+  segment_time：切片时长
+
+- 按时间点切分
+
+  ```bash
+  ffmpeg -re -i X王子.BD1280高清中字版.mp4 -f segment -segment_times 5,10,17 out%d.ts
+  ```
+
+  从5，10，17  秒处分割成4片
+
+- ffconcat格式索引
+
+  ```bash
+  ffmpeg -re -i X王子.BD1280高清中字版.mp4 -f segment -segment_list_type ffconcat -segment_list list.lst out%d.ts
+  ```
+
+  segment_list_type：指定分片索引类型
+
+  segment_list：指定索引文件名
+
+  索引文件内容如下
+
+  ![image-20210824230227093](http://oss.jianzhang.site/images/20240616211301.png)
+
+- CSV格式索引
+
+  ```bash
+  ffmpeg -re -i X王子.BD1280高清中字版.mp4 -f segment -segment_list_type csv -segment_list list.csv out%d.ts
+  ```
+
+  ![image-20210824230330471](http://oss.jianzhang.site/images/20240616211322.png)
+
+- 视频截取
+
+  ```bash
+  ffmpeg -i X王子.BD1280高清中字版.mp4 -ss 3 -t 10  out.mp4
+  ```
+
+  `ss` ：起始时间
+
+  `t` ：截取时长
+
+### 分离音视频
+
+- 从mp4中抽取AAC
+
+  ```bash
+  ffmpeg -i X王子.BD1280高清中字版.mp4 -vn -acodec copy ss.aac
+  ```
+
+- 提取视频
+
+  ```bash
+  ffmpeg -i X王子.BD1280高清中字版.mp4 -an -vcodec copy ss.h264
+  ```
+
+
+
+## 转码
+
+### 软编解码
+
+```bash
+ffmpeg -i X王子.BD1280高清中字版.mp4 -vcodec libx264 output.mp4
+```
+
+`vcodec` ：指定编解码器
+
+### 硬编解码
+
+- NvidiaGPU
+
+  ```bash
+  ffmpeg -hwaccels cuvid -vcodec h264_cuvid -i X王子.BD1280高清中字版.mp4 -vcodec h264_nvenc -acodec copy -f mp4 -y output.mp4
+  ```
+
+  ![Transcoding pipeline with ffmpeg flow diagram](http://oss.jianzhang.site/images/20240616211500.png)
+
+  https://developer.nvidia.com/zh-cn/blog/nvidia-ffmpeg-transcoding-guide/
+
+  使用硬件解码器`h264_cuvid` 和 `h264_nvenc` 硬件编码器
+
+### 流媒体
+
+- RTMP
+
+  ```bash
+  //将流，输出到文件
+  ffmpeg -i rtmp://pub.china.com -c copy -f flv output.flv
+  
+  //将文件，输出到流
+  ffmpeg -re -i X王子.BD1280高清中字版.mp4 -c copy -f flv rtmp://pub.china.com
+  ```
+
+
+
+## 滤镜
+
+```bash
+[输入流或标记名]滤镜参数[临时标记],[输入流或标记名]滤镜参数[临时标记];[输入流或标记名]滤镜参数[临时标记]
+```
+
+### 文字水印
+
+```bash
+ffmpeg -i output.mp4 -vf "drawtext=fontsize=100:fontfile=FreeSerif.ttf:text='hello world':x=10:y=30" output2.mp4
+```
+
+
+
+> drawtext 滤镜，冒号分隔参数 
+>
+> fontsize 字体大小 
+>
+> fontfile 字体文件 
+>
+> text 水印文本 
+>
+> x,y 位置
+
+
+
+![image-20210825000021734](http://oss.jianzhang.site/images/20240616211538.png)
+
+
+
+### 图片水印
+
+```bash
+ffmpeg -i output.mp4 -vf "movie=out.png[g];[in][g]overlay=40:15[out]" output3.mp4
+```
+
+![image-20210825000236380](http://oss.jianzhang.site/images/20240616211601.png)
+
+
+
+### 视频画中画
+
+```bash
+ffmpeg -re -i X王子.BD1280高清中字版.mp4 -vf "movie=HeadRoom.mp4,scale=480x320[test];[in][test]overlay[out]" out44.mp4
+```
+
+![image-20210825000353733](http://oss.jianzhang.site/images/20240616211621.png)
+
+
+
+### 多宫格处理
+
+```bash
+ffmpeg -re -i X王子.BD1280高清中字版.mp4 -i HeadRoom.mp4 -filter_complex "nullsrc=size=640x240[base];[0:v]setpts=PTS-STARTPTS,scale=320x240[left];[1:v]setpts=PTS-STARTPTS,scale=320x240[right];[base][left]overlay[temp];[temp][right]overlay=shortest=1:x=320" out5.mp4
+```
+
+![image-20210825000601957](http://oss.jianzhang.site/images/20240616211641.png)
+
+
+
+### 双声道转换成单声道
+
+```bash
+ffmpeg -i a.aac -ac 1 a1.aac
+```
+
+![image-20210825000713474](http://oss.jianzhang.site/images/20240616211702.png)
+
+### 双声道提取成两个单声道音频
+
+```bash
+ffmpeg -i a.aac -map_channel 0.0.0 l.aac -map_channel 0.0.1 r.aac
+```
+
+![image-20210825000830194](http://oss.jianzhang.site/images/20240616211732.png)
+
+### 两个音频合成为双声道
+
+```bash
+ffmpeg -i l.aac -i r.aac -filter_complex "[0:a][1:a]amerge=inputs=2[aout]" -map "[aout]"  s.aac
+```
+
+### 音频音量探测
+
+```bash
+ffmpeg -i s.aac -filter_complex volumedetect -c:v copy -f null /dev/null
+```
+
+### 添加字幕文件
+
+```bash
+ffmpeg -i input.mp4 -vf ass=t.ass -f flv output.flv
+```
+
+### 合并字幕流
+
+```bash
+ffmpeg -i input.mp4 -i t1.ass -map 0:0 -map 0:1 -map 1:0 -acodec copy -vcodec copy -scodec copy output.mkv
+```
+
+### 音频倍速播放
+
+```bash
+ffmpeg -i l.aac -filter_complex "atempo=tempo=0.5" -acodec aac o.aac
+```
+
+### 视频倍速播放
+
+```bash
+ffmpeg -re -i X王子.BD1280高清中字版.mp4 -filter_complex "setpts=PTS*2" o3.mp4
+```
+
+# 框架
+
+## 组成
+
+- AVFormat
+
+  封装格式处理模块
+
+  ![image-20210825001527103](http://oss.jianzhang.site/images/20240616211844.png)
+
+- AVCodec
+
+  编解码模块
+
+  ![image-20210825001548446](http://oss.jianzhang.site/images/20240616211917.png)
+
+- AVFilter
+
+  音频、视频、字幕滤镜
+
+  语法规则
+
+  - 相同线性链，用逗号分隔
+
+  - 不同线性链，用分号分隔
+
+  - 中括号，为结果命名
+
+  ![image-20210825001719927](http://oss.jianzhang.site/images/20240616212011.png)
+
+- swscale
+
+  视频图像转换计算模块
+
+  - 分辨率
+
+  - 像素格式
+
+- swresample
+
+  - 音频重采样
+  - 声道布局调整
+
+- libavutil
+
+  libavutil是一个实用库，用于辅助多媒体编程。如字符串函数、随机数函数
+
+-  libavdevice
+
+  从输入设备音视频采集，渲染到音视频输出设备
+
+- libpostproc
+
+  后期处理
+
+## API使用
+
+- av_register_all
+
+  - 注册编解码器
+
+  - 注册封装格式
+
+  - 注册网络协议
+
+- 数据包/数据帧(AVPacket/AVFrame)
+
+- av_packet_alloc/av_frame_alloc(分配数据包/分配数据帧)
+
+- av_packet_free/av_frame_alloc(释放数据包内存/释放数据帧内存)
+
+### 封装媒体容器
+
+> 注册模块->打开输出上下文->增加流->写文件头->循环写入数据包->写入文件结尾数据
+
+![image-20210825193219696](http://oss.jianzhang.site/images/20240616212044.png)
+
+### 解封装
+
+> 注册模块->打开输入上下文->查找音视频流信息->循环读取视频包->关闭输入上下文
+
+![image-20210825193322700](http://oss.jianzhang.site/images/20240616212105.png)
+
+### 解码
+
+> 注册模块->查找解码器->分配解码器上下文->打开解码器->发送数据包->循环读取完，解码后的数据帧->释放解码器上下文
+
+![image-20210825193407945](http://oss.jianzhang.site/images/20240616212130.png)
+
+编码跟解码类似
+
+### 滤镜处理流程
+
+![image-20210825193539778](http://oss.jianzhang.site/images/20240616212151.png)
+

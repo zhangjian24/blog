@@ -1,0 +1,82 @@
+---
+title: '文本方式绘制UML-PlantUML'
+pubDate: 2021-08-07
+description: '文本方式绘制UML-PlantUML'
+author: 'jianzhang'
+image:
+    url: 'https://docs.astro.build/assets/full-logo-light.png'
+    alt: '文本方式绘制UML-PlantUML'
+tags: ["后端"]
+---
+
+# 优势
+
+通过 `PlantUML` 可以用文本绘制 `uml` 图，可以进行 `git` 版本管理和差异对比。
+
+# 安装
+
+首先要安装JDK
+
+然后安装[graphviz](http://www.graphviz.org/download/) ，并加入 `path`
+
+安装vscode插件
+
+![Snipaste_2020-11-09_11-38-45](http://oss.jianzhang.site/images/20240616221420.png)
+
+新建代码文件 `test.puml` ；
+
+Alt+D开启预览
+
+[语法参考][2]
+
+`ctrl + shift + p`  打开命令行面板，输入 `plantuml`  导出文件为图片。
+
+![Snipaste_2020-11-09_11-39-32](http://oss.jianzhang.site/images/20240616221445.png)
+
+
+
+idea 安装插件
+
+![Snipaste_2020-11-17_14-14-59](http://oss.jianzhang.site/images/20240616221504.png)
+
+------
+
+# PlantUML 支持的图形
+
+**PlantUML**是一个开源项目，支持快速绘制：
+
+- [时序图](https://plantuml.com/zh/sequence-diagram)
+- [用例图](https://plantuml.com/zh/use-case-diagram)
+- [类图](https://plantuml.com/zh/class-diagram)
+- [活动图](https://plantuml.com/zh/activity-diagram-beta) ([旧版语法](https://plantuml.com/zh/activity-diagram-legacy)在此处)
+- [组件图](https://plantuml.com/zh/component-diagram)
+- [状态图](https://plantuml.com/zh/state-diagram)
+- [对象图](https://plantuml.com/zh/object-diagram)
+- [部署图](https://plantuml.com/zh/deployment-diagram)
+- [定时图](https://plantuml.com/zh/timing-diagram)
+
+同时还支持以下非UML图:
+
+- [线框图形界面](https://plantuml.com/zh/salt)
+- [架构图](https://plantuml.com/zh/archimate-diagram)
+- [规范和描述语言 (SDL)](https://plantuml.com/zh/activity-diagram-beta#sdl)
+- [Ditaa diagram](https://plantuml.com/zh/ditaa)
+- [甘特图](https://plantuml.com/zh/gantt-diagram)
+- [思维导图](https://plantuml.com/zh/mindmap-diagram)
+- [Work Breakdown Structure diagram](https://plantuml.com/zh/wbs-diagram)
+- [以 AsciiMath 或 JLaTeXMath 符号的数学公式](https://plantuml.com/zh/ascii-math)
+- [Entity Relationship diagram](https://plantuml.com/zh/ie-diagram)
+
+
+
+问题：
+
+- 找不到 `vcruntime140.DLL` ，安装 visual c++ 2015，x64 和x86 都要安装。
+
+------
+
+
+
+[1]: https://blog.csdn.net/xiaozhengchenxxm/article/details/82861433	"参考文档"
+
+[2]: https://plantuml.com/zh/	"语法文档"

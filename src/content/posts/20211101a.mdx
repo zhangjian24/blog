@@ -1,0 +1,56 @@
+---
+title: '理解字符编码─Unicode字符集'
+pubDate: 2021-11-01
+description: '理解字符编码─Unicode字符集'
+author: 'jianzhang'
+image:
+    url: 'https://docs.astro.build/assets/full-logo-light.png'
+    alt: '理解字符编码─Unicode字符集'
+tags: ["后端"]
+---
+
+# 编码&解码
+
+计算机的世界都是用数字表示。所谓的字符编码，就将字符转换成一一对应的数字，解码就是将数字转换成字符。编码的方式和解码的方式不一样就会乱码。
+
+# ASCII编码
+
+计算机最早开端于美帝国，只需要对字母和一些控制字符编码就行了，所以有了`ASCII`编码，用一个字节8位表示字符，能支持256个。
+
+# unicode 字符集与UTF-8编码
+
+后来其他语言国家，也普及了计算机，不够用了，就需要扩展 ASCII  编码了。国际组织就设计了`unicode`字符集，希望能容纳全世界全部语言文字。
+
+unicode 兼容ASCII，每个字符对应的数字，成为代码点(codepoint)。如果严格按照unicode的方式(UCS-2用16位)定长存储，那么代码点值比较小的英文二进制编码中高位有很多0，浪费空间，因此就有了变长编码方式，如`UTF-8` (8-bit Unicode Transformation Format)、UTF-16(16-bit Unicode Transformation Format) 等。在这些编码方式中，字符对应的代码点不变，通过编码后二进制存储形式不同。
+
+UTF-8 中，代码点范围及对应的编码方式：
+
+```
+//代码点 ：编码
+U+ 0000 ~ U+  007F: 0XXXXXXX
+U+ 0080 ~ U+  07FF: 110XXXXX 10XXXXXX
+U+ 0800 ~ U+  FFFF: 1110XXXX 10XXXXXX 10XXXXXX
+U+10000 ~ U+10FFFF: 11110XXX 10XXXXXX 10XXXXXX 10XXXXXX
+```
+
+根据以上规则，那么“张”字的代码点为0x5F20，对应第3条，将代码点的二进制位从低到高，依次填入“x”的位置，位数不够补0，得到UTF-8编码为：11101011011110010100000。以下为java中的验证：
+
+```java
+    public static void main(String[] args) throws Exception {
+        String str = "张";
+        int codePoint = str.codePointAt(0);//
+        System.out.println(codePoint);//24352
+        System.out.println(Integer.toHexString(codePoint));//0x5F20
+        System.out.println(Integer.toBinaryString(codePoint));//101111100100000
+
+        byte[] bytes = str.getBytes("UTF-8");
+        for (byte aByte : bytes) {//111001011011110010100000
+            System.out.print(Integer.toBinaryString(aByte & 0xFF));
+        }
+    }
+
+```
+
+参考视频：[https://www.ltool.net/characters-to-unicode-charts-in-simplified-chinese.php?unicode=117](https://www.ltool.net/characters-to-unicode-charts-in-simplified-chinese.php?unicode=117)
+
+查询unicode 各种字符的所在的范围：[https://www.ltool.net/characters-to-unicode-charts-in-simplified-chinese.php?unicode=117](https://www.ltool.net/characters-to-unicode-charts-in-simplified-chinese.php?unicode=117)，发现易经六十四卦符号(U+4DC0->4DFF)。
