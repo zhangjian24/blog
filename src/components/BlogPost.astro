@@ -55,6 +55,34 @@ const { url,frontmatter,Content,headings } = Astro.props;
         content: 'h6';
     }
 
+    :global(.prose nav.toc .toc-level,.prose nav.toc .toc-item){
+        margin-top: 0.25rem; /* 4px */
+        margin-bottom: 2px;
+    }
+    :global(.prose nav.toc){
+        border-style: dashed;
+        border-width: 2px;
+        font-size: 0.75rem; /* 12px */
+        line-height: 1rem; /* 16px */
+    }
+    :global(.prose nav.toc a.toc-link){
+        color: rgb(100 116 139);
+    }
+    :global(.prose nav.toc a.toc-link:hover){
+        text-decoration-color: #1d4ed8;
+        color: rgb(29 78 216);
+    }
+    :global(.prose p>code){
+        background-color: rgb(226 232 240);
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+    :global(.prose p>code::before,.prose p>code::after){
+        content: '';
+    }
+
 </style>
 
 <BaseLayout pgTitle={frontmatter.title}>

@@ -5,16 +5,10 @@ const {tag} = Astro.props;
 
 ---
 
-<div class="flex item-end m-2 h-fit ">
-    <a href={`/tags/${tag}/`}>
-    <div class="inline-block">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />
-    </svg>
+<a href={`/tags/${tag}/`}>
+    <div class="flex item-end m-2 h-fit ">
+        <div class="inline-block h-fit bg-cyan-50 hover:bg-cyan-100 rounded-tl-lg border-dashed hover:border-solid border-cyan-400 border-b-2 pr-2">
+            {tag}<label class="font-light italic text-slate-400">({allPosts.filter((post) =>post.data.tags.includes(tag)).length})</label>
+        </div>
     </div>
-    <div class="inline-block h-fit bg-cyan-50 hover:bg-cyan-100 rounded-tl-lg border-dashed hover:border-solid border-cyan-400 border-b-2 px-2">
-    {tag}<label class="font-light italic text-slate-400">({allPosts.filter((post) =>post.data.tags.includes(tag)).length})</label>
-    </div>
-    </a>
-</div>
+</a>
