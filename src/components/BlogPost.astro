@@ -94,13 +94,10 @@ const { url,frontmatter,Content,headings } = Astro.props;
 		</div>
 	</div>
     <div class="mt-4 pt-2 px-4 flex justify-between">
-        <div class="prose max-w-none px-4 grow">
+        <div class="prose max-w-none w-3/4 px-4 grow">
            <Content/>
         </div>
         <div class="grow-0 w-1/4 px-4 border-solid border-black border-l-2">
-            <!--
-            TODO 目录 样式
-            -->
             {
                 frontmatter.tags.map((tag)=><BlogTag tag={tag}/>)
             }
