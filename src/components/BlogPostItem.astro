@@ -1,0 +1,14 @@
+---
+import FormattedDate from './FormattedDate.astro'
+
+const {post} = Astro.props;
+---
+
+<div class="border rounded hover:border-blue-700 hover:text-blue-600">
+    <!--<img class="w-full h-96" src="http://oss.jianzhang.site/images/%E7%88%B1%E5%9C%A8%E6%97%A5%E8%90%BD%E9%BB%84%E6%98%8F%E6%97%B6%20(2004)%20720p%20AAC-poster.jpg"></img> -->
+    <div class="bg-slate-50 text-wrap"><a href={`/posts/${post.slug}/`} title="description">{post.data.title}</a></div>
+    <div class="flex justify-between border border-dashed text-xs font-thin italic">
+        <div> <FormattedDate date={post.data.pubDate}/></div>
+        <div>{post.data.author}</div>
+    </div>
+</div>

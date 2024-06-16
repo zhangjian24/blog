@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import FormattedDate from './FormattedDate.astro'
+import BlogTag from "./BlogTag.astro";
+const { url,frontmatter,Content,headings } = Astro.props;
+
+---
+
+<style>
+    :global(.prose>p){
+        text-indent: 2rem;
+    }
+    :global(.prose>h1,.prose>h2,.prose>h3,.prose>h4,.prose>h5,.prose>h6){
+        border-bottom-width: 2px;
+    }
+    :global(.prose>h2){
+        text-indent: 1rem;
+    }
+    :global(.prose>h3){
+        text-indent: 2rem;
+    }
+    :global(.prose>h4){
+        text-indent: 3rem;
+    }
+    :global(.prose>h5){
+        text-indent: 4rem;
+    }
+    :global(.prose>h6){
+        text-indent: 5rem;
+    }
+
+    :global(.prose>h1:after,.prose>h2:after,.prose>h3:after,.prose>h4:after,.prose>h5:after,.prose>h6:after){
+        font-weight: 100;
+        font-size: 1rem;
+        color: rgb(148 163 184);
+        border-width: 2px;
+        margin-left: 4px;
+    }
+    :global(.prose>h1:after){
+        content: 'h1';
+    }
+    :global(.prose>h2:after){
+        content: 'h2';
+    }
+    :global(.prose>h3:after){
+        content: 'h3';
+    }
+    :global(.prose>h4:after){
+        content: 'h4';
+    }
+    :global(.prose>h5:after){
+        content: 'h5';
+    }
+    :global(.prose>h6:after){
+        content: 'h6';
+    }
+
+</style>
+
+<BaseLayout pgTitle={frontmatter.title}>
+	<div class="border rounded mb-4">
+		<div class="bg-slate-50 text-wrap text-center text-4xl py-3">{frontmatter.title}</div>
+		<div class="flex justify-between border border-dashed text-xs font-thin italic">
+			<div><FormattedDate date={frontmatter.pubDate}/></div>
+			<div>{frontmatter.author}</div>
+		</div>
+	</div>
+    <div class="mt-4 pt-2 px-4 flex justify-between">
+        <div class="prose max-w-none px-4 grow">
+           <Content/>
+        </div>
+        <div class="grow-0 w-1/4 px-4 border-solid border-black border-l-2">
+            <!--
+            TODO 目录 样式
+            -->
+            {
+                frontmatter.tags.map((tag)=><BlogTag tag={tag}/>)
+            }
+        </div>
+    </div>
+</BaseLayout>
