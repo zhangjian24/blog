@@ -12,53 +12,511 @@ tags: ["前端"]
 # 了解Astro
 
 Astro 是最适合构建像博客、营销网站、电子商务网站这样的以内容驱动的网站的 Web 框架。
-> https://docs.astro.build/zh-cn/tutorials/add-content-collections/
-> https://docs.astro.build/zh-cn/basics/layouts/#markdownmdx-%E5%B8%83%E5%B1%80
-> https://docs.astro.build/zh-cn/recipes/tailwind-rendered-markdown/#%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4
-https://docs.astro.build/zh-cn/recipes/tailwind-rendered-markdown/#%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4
-
-
-https://tailwindcss.com/docs/size
 
 ## Astro 特性
 
-- 内容驱动
-- 服务器优先
-- 高度可定制
+- 群岛：一种基于组件的针对内容驱动的网站进行优化的 Web 架构。
+- UI 无关：支持 React、Preact、Svelte、Vue、Solid、Lit、HTMX、Web 组件等等。
+- 服务器优先：将沉重的渲染移出访问者的设备。
+- 默认无 JS：让客户端更少的执行 JS ，以提升网站速度。
+- 内容集合：为你的 Markdown 内容，提供组织、校验并保证 TypeScript 类型安全。
+- 可定制：Tailwind、MDX 和数百个集成可供选择。
 
 ## 基本概念
 
+### 项目结构
+
+Astro 为你的项目提供了一个有想法的文件夹布局。每个 Astro 项目的根目录下都应该包括以下目录和文件：
+
+- src/* - 你的项目源代码（组件、页面、样式等）。
+- public/* - 你的非代码、未处理的资源（字体、图标等）。
+- package.json - 项目清单。
+- astro.config.mjs - Astro 配置文件（推荐）。
+- tsconfig.json - TypeScript 配置文件（推荐）。
+
 ### 组件
+
+Astro 组件，通过文件扩展名 .astro 来识别 Astro 组件，放在 `src/components/` 文件夹下。Astro 组件最重要的一点是它们不会在客户端上渲染。它们在构建时或使用 服务器端渲染（SSR） 按需呈现为 HTML。
+Astro 组件是由两个主要部分所组成的——组件 script 和组件模板。
+```
+---
+// 组件脚本（JavaScript）
+---
+<!-- 组件模板（HTML + JS 表达式）-->
+```
+
+Astro 组件可以定义和接受参数。可以在 frontmatter script 中的 Astro.props 中使用。
+定义:
+```
+---
+// 使用：<GreetingHeadline greeting="你好" name="朋友" />
+const { greeting, name } = Astro.props
+---
+<h2>{greeting}，{name}!</h2>
+```
+
+使用：
+```
+---
+import GreetingHeadline from './GreetingHeadline.astro';
+const name = "Astro";
+---
+<h1>Greeting Card</h1>
+<GreetingHeadline greeting="嗨" name={name} />
+<p>希望你有美好的一天！</p>
+```
+
+插槽 `<slot />` 元素是嵌入外部 HTML 内容的占位符，你可以将其他文件中的子元素注入（或“嵌入”）到组件模板中。
+
+当你在 Astro 组件内置了 `<style>` 标签时，Astro 就会自动检测 CSS 并开始为你处理样式。
+Astro `<style>` 标签内的 CSS 规则默认自动限定范围。作用域样式在幕后编译，只适用于写在同一组件内的 HTML。
+源码：
+```
+<style>
+  h1 {
+    color: red;
+  }
+
+  .text {
+    color: blue;
+  }
+</style>
+```
+会编译成：
+```
+<style>
+  h1[data-astro-cid-hhnqfkh6] {
+     color: red;
+  }
+
+  .text[data-astro-cid-hhnqfkh6] {
+    color: blue;
+  }
+</style>
+```
+
+你可以通过 `<style is:global>` 属性选择不自动限定 CSS 范围。
+你也可以在 `<style>` 使用 `:global()` 包裹css选择器，这可以将 CSS 样式应用于子组件。
 
 ### 页面
 
+页面是位于 Astro 项目的 src/pages/ 子目录中的文件。它们负责处理路由、数据加载以及网站中每个页面的整体页面布局。
+Astro 支持 src/pages/ 目录中的以下文件类型：
+
+- `.astro`
+- `.md`
+- `.mdx (需要安装 MDX 集成)`
+- `.html`
+- `.js/.ts (as endpoints)`
+
 ### 布局
 
+布局是特殊的 Astro 组件，可用于创建可重用的页面模板。布局组件通常放置在项目中的 src/layouts 目录中，但这不是必须的。你可以选择将它们放置在项目中的任何位置。
+
 ### 内容集合
+
+一个内容集合是保留在 src/content 目录中的任何顶级目录，一旦有了一个集合，你就可以使用 Astro 的内置内容 API 开始查询集合,内容集合帮助管理你的文档，校验 frontmatter，并为所有内容提供自动 TypeScript 类型安全。
+![](http://oss.jianzhang.site/images/20240618104603.png)
 
 # 初始化项目
 
 ## 开发环境准备
 
+- [NdoeJS](https://nodejs.org/zh-cn) >= v20.3.0
+- [VS Code](https://code.visualstudio.com/)
+- [pnpm](https://pnpm.io/zh/motivation)
+
 ## 生成项目结构
 
->  引用内容
+执行命令
 
-```shell
-echo 'asdf'
+```
+pnpm create astro@latest
 ```
 
-## 添加集成
+当提示 `Where would you like to create your new project?`（你想要在哪里创建你的新项目？）时输入文件夹的名称来为你的项目创建一个新目录，例如：`./tutorial`
+然后用方向键选择模板
+当提示询问你是否打算编写 TypeScript 时，输入 n (不打算)。
+当提示询问 `Would you like to install dependencies?`（你想现在安装依赖吗？）时输入 y(现在安装)。
+当提示询问 `Would you like to initialize a new git repository?`（你想要初始化一个新的 Git 仓库吗？）时输入 y(要初始化)。
+
+项目生成完成后，可以在开发模式下实时预览
+
+```
+pnpm dev
+```
 
 # 内容
 
-## 添加页面
+## 布局
+
+在项目中添加CSS库 [Tailwind](https://tailwindcss.com/) 
+```
+pnpm.cmd astro add tailwind
+```
+
+
+在 `astro.config.mjs` 中添加配置
+```
+import { defineConfig } from 'astro/config';
+import tailwind from "@astrojs/tailwind";
+
+// https://astro.build/config
+export default defineConfig({
+  devToolbar: {
+    enabled: false
+  },
+  integrations: [tailwind(),],
+});
+```
+
+在 `src/components` 目录下创建 `Header.astro` ，编写页头组件;
+```
+---
+
+---
+
+<div class="flex flex-row border-b border-zinc-200">
+    <div class="flex flex-row items-end w-60">
+        <div class="w-10 h-10 bg-[url('/favicon.svg')]"></div>
+        <span class="text-2xl">健兼</span>
+    </div>
+    <div class="grow flex flex-row justify-center">
+        <div class="inline-block text-2xl py-0.5 px-0.5 border-b-2 border-white hover:border-blue-700 hover:text-blue-600">
+        <a href="/">首页</a>
+        </div>
+        <div class="inline-block text-2xl py-0.5 px-0.5 border-b-2 border-white hover:border-blue-700 hover:text-blue-600">
+        <a href="/about/">关于</a>
+        </div>
+    </div>
+    <div class="w-60"></div>
+</div>
+```
+
+在 `src/components` 目录下创建 `Footer.astro` ，编写页脚组件;
+```
+---
+
+---
+
+<footer class="flex justify-center my-10">
+    <div class="text-xs font-thin">copyright &copy; 2024 JianZhang</div>
+</footer>
+```
+
+在 `src/layouts` 文件加下，创建 `BaseLayout.astro` 布局文件，确定页面基础布局，通过 `Astro.props` 读取上层页面传递过来的参数，`<slot>` 作为当前页面内容的占位符。
+```
+---
+import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
+import { ViewTransitions } from "astro:transitions";
+
+const {pgTitle} = Astro.props
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{pgTitle}</title>
+        <ViewTransitions/>
+	</head>
+	<body class="mt-4 px-4 min-h-screen flex flex-col justify-between">
+        <div  class="grow flex flex-col justify-start">
+            <Header class="grow-0"/>
+            <slot class="grow"/>
+        </div>
+        <Footer class="grow-0"/>
+    </body>
+</html>
+```
 
 ## 添加博客文章
 
-# 布局
+设置 TypeScript:
+```
+{
+  // 注意：如果使用 `astro/tsconfigs/strict` 或 `astro/tsconfigs/strictest`，则不需要更改
+  "extends": "astro/tsconfigs/base",
+  "compilerOptions": {
+    "strictNullChecks": true
+  }
+}
+```
 
-## 元数据
-## 页头
-## 页脚
+创建 `src/content/posts` 文件夹, 并创建 `config.ts` 定义集合：
+```
+// 1. 从 `astro:content` 导入适当的工具。
+import { z, defineCollection } from 'astro:content';
 
+// 2. 定义要用 schema 验证的每个集合。
+const blogCollection = defineCollection({
+  type: 'content', // v2.5.0 及之后
+  schema: z.object({
+    title: z.string(),
+    tags: z.array(z.string()),
+    image: z.string().optional(),
+  }),
+});
+
+// 3. 导出一个 `collections` 对象来注册你的集合。
+export const collections = {
+  'blog': blogCollection,
+};
+```
+
+Astro 将内容集合的重要元数据存储在项目中的 `.astro/` 目录， 只要运行astro dev, astro build命令, `.astro` 目录就会自动更新。
+
+添加 Astro [MDX](https://www.mdxjs.cn/) 集成可以使用 JSX 变量、表达式和组件来增强你的 Markdown 编写体验。
+```
+pnpm.cmd astro add mdx
+```
+
+在 `astro.config.mjs` 中添加配置
+```
+import { defineConfig } from 'astro/config';
+import tailwind from "@astrojs/tailwind";
+import mdx from "@astrojs/mdx";
+
+// https://astro.build/config
+export default defineConfig({
+  devToolbar: {
+    enabled: false
+  },
+  integrations: [tailwind(), mdx()],
+});
+```
+
+在 `src/content/posts/` 文件夹下创建博客文章 `xxx.mdx`, 并添加合适的 frontmatter .
+
+```
+---
+title: '我的第一篇博客文章'
+pubDate: 2022-07-01
+description: '这是我 Astro 博客的第一篇文章。'
+author: 'Astro 学习者'
+image:
+    url: 'https://docs.astro.build/assets/rose.webp'
+    alt: 'The Astro logo on a dark background with a pink glow.'
+tags: ["astro", "blogging", "learning in public"]
+---
+
+# 我的第一篇博客文章
+
+ 发表于：2022-07-01
+
+ 欢迎来到我学习关于 Astro 的新博客！在这里，我将分享我建立新网站的学习历程。
+
+ ## 我做了什么
+
+ 1. **安装 Astro**：首先，我创建了一个新的 Astro 项目并设置好了我的在线账号。
+
+ 2. **制作页面**：然后我学习了如何通过创建新的 `.astro` 文件并将它们保存在 `src/pages/` 文件夹里来制作页面。
+
+ 3. **发表博客文章**：这是我的第一篇博客文章！我现在有用 Astro 编写的页面和用 Markdown 写的文章了！
+
+ ## 下一步计划
+
+ 我将完成 Astro 教程，然后继续编写更多内容。关注我以获取更多信息。
+
+ ```
+
+在 `src/pages/posts/` 文件夹下，添加 `[...slug].astro` 文件，定义 `getStaticPaths` 返回数组, Astro 会将数组元素传递给当前文件生成页面，元素中的 `slug` 用于生成页面名称，而 `props` 用于生成页面内容。
+`getCollection` 会返回 `src/content/posts` 内容集合，通过data访问内容条目的元数据，Content 是转换后的HTML内容, headings 是目录数组。
+
+```
+---
+import { getCollection } from 'astro:content';
+import BlogPost from '../../components/BlogPost.astro';
+
+export async function getStaticPaths() {
+  const blogEntries = await getCollection('posts');
+  return blogEntries.map(entry => ({
+    params: { slug: entry.slug }, props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content,headings } = await entry.render();
+---
+
+<BlogPost url={`/posts/${entry.slug}`} frontmatter={entry.data} Content={Content} headings = {headings} />
+```
+通过 `BlogPost` 组件， 展示markdown 渲染后的内容
+```
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import FormattedDate from './FormattedDate.astro'
+import BlogTag from "./BlogTag.astro";
+const { url,frontmatter,Content,headings } = Astro.props;
+
+---
+
+<style>
+    :global(.prose>p){
+        text-indent: 2rem;
+    }
+    :global(.prose>h1,.prose>h2,.prose>h3,.prose>h4,.prose>h5,.prose>h6){
+        border-bottom-width: 2px;
+    }
+    :global(.prose>h2){
+        text-indent: 1rem;
+    }
+    :global(.prose>h3){
+        text-indent: 2rem;
+    }
+    :global(.prose>h4){
+        text-indent: 3rem;
+    }
+    :global(.prose>h5){
+        text-indent: 4rem;
+    }
+    :global(.prose>h6){
+        text-indent: 5rem;
+    }
+
+    :global(.prose>h1:after,.prose>h2:after,.prose>h3:after,.prose>h4:after,.prose>h5:after,.prose>h6:after){
+        font-weight: 100;
+        font-size: 1rem;
+        color: rgb(148 163 184);
+        border-width: 2px;
+        margin-left: 4px;
+    }
+    :global(.prose>h1:after){
+        content: 'h1';
+    }
+    :global(.prose>h2:after){
+        content: 'h2';
+    }
+    :global(.prose>h3:after){
+        content: 'h3';
+    }
+    :global(.prose>h4:after){
+        content: 'h4';
+    }
+    :global(.prose>h5:after){
+        content: 'h5';
+    }
+    :global(.prose>h6:after){
+        content: 'h6';
+    }
+
+    :global(.prose nav.toc .toc-level,.prose nav.toc .toc-item){
+        margin-top: 0.25rem; /* 4px */
+        margin-bottom: 2px;
+    }
+    :global(.prose nav.toc){
+        border-style: dashed;
+        border-width: 2px;
+        font-size: 0.75rem; /* 12px */
+        line-height: 1rem; /* 16px */
+    }
+    :global(.prose nav.toc a.toc-link){
+        color: rgb(100 116 139);
+    }
+    :global(.prose nav.toc a.toc-link:hover){
+        text-decoration-color: #1d4ed8;
+        color: rgb(29 78 216);
+    }
+    :global(.prose :not(pre)>code){
+        background-color: rgb(226 232 240);
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+    :global(.prose :not(pre)>code::before,.prose :not(pre)>code::after){
+        content: '';
+    }
+
+</style>
+
+<BaseLayout pgTitle={frontmatter.title}>
+	<div class="border rounded mb-4">
+		<div class="bg-slate-50 text-wrap text-center text-4xl py-3">{frontmatter.title}</div>
+		<div class="flex justify-between border border-dashed text-xs font-thin italic">
+			<div><FormattedDate date={frontmatter.pubDate}/></div>
+			<div>{frontmatter.author}</div>
+		</div>
+	</div>
+    <div class="mt-4 pt-2 px-4 flex justify-between">
+        <div class="prose max-w-none w-3/4 px-4 grow">
+           <Content/>
+        </div>
+        <div class="grow-0 w-1/4 px-4 border-solid border-black border-l-2">
+            {
+                frontmatter.tags.map((tag)=><BlogTag tag={tag}/>)
+            }
+        </div>
+    </div>
+</BaseLayout>
+```
+
+通过 `/posts/xxx/` 访问文章
+
+Markdown 经过 Astro 转换的HTML是没有样式的， 通过添加 [rehype](https://github.com/rehypejs/rehype) 集成来美化。
+```
+pnpm.cmd astro add tailwindcss @tailwindcss/typography rehype-slug rehype-autolink-headings @jsdevtools/rehype-toc
+ 
+```
+
+要想 [typography](https://github.com/tailwindlabs/tailwindcss-typography) 插件生效，还需要在 `<Content>` 的父元素上添加 `prose` 类。
+rehype-toc 插件负责生成 目录，rehype-slug 和 rehype-autolink-headings 为目录生成 锚链接，在 `astro.config.mjs` 中添加配置
+```
+import { defineConfig } from 'astro/config';
+import tailwind from "@astrojs/tailwind";
+import rehypeToc from '@jsdevtools/rehype-toc'
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+
+import mdx from "@astrojs/mdx";
+
+// https://astro.build/config
+export default defineConfig({
+  devToolbar: {
+    enabled: false
+  },
+  integrations: [tailwind(), mdx()],
+  markdown: {
+		rehypePlugins: [
+      rehypeSlug,
+      [rehypeAutolinkHeadings, { behavior: 'prepend' }],
+			[rehypeToc, { headings: ['h1','h2', 'h3'] }],
+		],
+	},
+});
+```
+
+自己还可以通过 `:global()` 给子组件中的内容添加自定义的Markdown 样式。
+
+ ## 添加首页
+
+添加 `src/pages/index.astro` 定义首页，通过 `getCollection` API 访问内容集合元数据, 展示文章列表和标签列表。
+```
+---
+import { getCollection } from "astro:content";
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogPostItem from "../components/BlogPostItem.astro";
+import BlogTag from "../components/BlogTag.astro";
+const allPosts = await getCollection("posts");
+const pgTitle ='首页';
+const uniqueTags = [...new Set(allPosts.map((post) => post.data.tags).flat())];
+
+---
+<BaseLayout pgTitle={pgTitle}>
+	<div class="w-full h-full flex my-10 px-6">
+		<div class="w-9/12 mx-4 px-4">
+			{allPosts.map((post) =>
+			<BlogPostItem post = {post} />
+			)}
+		</div>
+		<div class="w-1/4 mx-4 px-4 border-solid border-black border-l-2 flex flex-wrap">
+			{uniqueTags.map((tag) =>
+				<BlogTag tag={tag}/>
+			)}
+		</div>
+	</div>
+</BaseLayout>
+```
