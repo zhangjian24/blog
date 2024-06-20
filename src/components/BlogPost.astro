@@ -72,14 +72,14 @@ const { url,frontmatter,Content,headings } = Astro.props;
         text-decoration-color: #1d4ed8;
         color: rgb(29 78 216);
     }
-    :global(.prose p>code){
+    :global(.prose :not(pre)>code){
         background-color: rgb(226 232 240);
         margin-left: 0.25rem;
         margin-right: 0.25rem;
         padding-left: 0.25rem;
         padding-right: 0.25rem;
     }
-    :global(.prose p>code::before,.prose p>code::after){
+    :global(.prose :not(pre)>code::before,.prose :not(pre)>code::after){
         content: '';
     }
 
