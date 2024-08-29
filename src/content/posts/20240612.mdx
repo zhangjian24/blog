@@ -47,7 +47,7 @@ Astro 组件是由两个主要部分所组成的——组件 script 和组件模
 
 Astro 组件可以定义和接受参数。可以在 frontmatter script 中的 Astro.props 中使用。
 定义:
-```
+```astro
 ---
 // 使用：<GreetingHeadline greeting="你好" name="朋友" />
 const { greeting, name } = Astro.props
@@ -56,7 +56,7 @@ const { greeting, name } = Astro.props
 ```
 
 使用：
-```
+```astro ins={6}
 ---
 import GreetingHeadline from './GreetingHeadline.astro';
 const name = "Astro";
@@ -71,7 +71,7 @@ const name = "Astro";
 当你在 Astro 组件内置了 `<style>` 标签时，Astro 就会自动检测 CSS 并开始为你处理样式。
 Astro `<style>` 标签内的 CSS 规则默认自动限定范围。作用域样式在幕后编译，只适用于写在同一组件内的 HTML。
 源码：
-```
+```css
 <style>
   h1 {
     color: red;
@@ -83,7 +83,7 @@ Astro `<style>` 标签内的 CSS 规则默认自动限定范围。作用域样�
 </style>
 ```
 会编译成：
-```
+```css
 <style>
   h1[data-astro-cid-hhnqfkh6] {
      color: red;
@@ -94,9 +94,10 @@ Astro `<style>` 标签内的 CSS 规则默认自动限定范围。作用域样�
   }
 </style>
 ```
-
+:::notice
 你可以通过 `<style is:global>` 属性选择不自动限定 CSS 范围。
 你也可以在 `<style>` 使用 `:global()` 包裹css选择器，这可以将 CSS 样式应用于子组件。
+:::
 
 ### 页面
 
@@ -130,7 +131,7 @@ Astro 支持 src/pages/ 目录中的以下文件类型：
 
 执行命令
 
-```
+```shell
 pnpm create astro@latest
 ```
 
@@ -142,7 +143,7 @@ pnpm create astro@latest
 
 项目生成完成后，可以在开发模式下实时预览
 
-```
+```shell
 pnpm dev
 ```
 
@@ -151,13 +152,13 @@ pnpm dev
 ## 布局
 
 在项目中添加CSS库 [Tailwind](https://tailwindcss.com/) 
-```
+
+```shell
 pnpm.cmd astro add tailwind
 ```
 
-
 在 `astro.config.mjs` 中添加配置
-```
+```js ins={10}
 import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
 
@@ -166,12 +167,14 @@ export default defineConfig({
   devToolbar: {
     enabled: false
   },
-  integrations: [tailwind(),],
+  integrations: [
+    tailwind(),
+  ],
 });
 ```
 
 在 `src/components` 目录下创建 `Header.astro` ，编写页头组件;
-```
+```html
 ---
 
 ---
@@ -194,7 +197,7 @@ export default defineConfig({
 ```
 
 在 `src/components` 目录下创建 `Footer.astro` ，编写页脚组件;
-```
+```html
 ---
 
 ---
@@ -205,7 +208,7 @@ export default defineConfig({
 ```
 
 在 `src/layouts` 文件加下，创建 `BaseLayout.astro` 布局文件，确定页面基础布局，通过 `Astro.props` 读取上层页面传递过来的参数，`<slot>` 作为当前页面内容的占位符。
-```
+```astro
 ---
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
@@ -236,7 +239,7 @@ const {pgTitle} = Astro.props
 ## 添加博客文章
 
 设置 TypeScript:
-```
+```js
 {
   // 注意：如果使用 `astro/tsconfigs/strict` 或 `astro/tsconfigs/strictest`，则不需要更改
   "extends": "astro/tsconfigs/base",
@@ -247,7 +250,7 @@ const {pgTitle} = Astro.props
 ```
 
 创建 `src/content/posts` 文件夹, 并创建 `config.ts` 定义集合：
-```
+```ts
 // 1. 从 `astro:content` 导入适当的工具。
 import { z, defineCollection } from 'astro:content';
 
@@ -270,12 +273,12 @@ export const collections = {
 Astro 将内容集合的重要元数据存储在项目中的 `.astro/` 目录， 只要运行astro dev, astro build命令, `.astro` 目录就会自动更新。
 
 添加 Astro [MDX](https://www.mdxjs.cn/) 集成可以使用 JSX 变量、表达式和组件来增强你的 Markdown 编写体验。
-```
+```shell
 pnpm.cmd astro add mdx
 ```
 
 在 `astro.config.mjs` 中添加配置
-```
+```js ins={12}
 import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
 import mdx from "@astrojs/mdx";
@@ -285,13 +288,16 @@ export default defineConfig({
   devToolbar: {
     enabled: false
   },
-  integrations: [tailwind(), mdx()],
+  integrations: [
+    tailwind(), 
+    mdx()
+    ],
 });
 ```
 
 在 `src/content/posts/` 文件夹下创建博客文章 `xxx.mdx`, 并添加合适的 frontmatter .
 
-```
+```mdx
 ---
 title: '我的第一篇博客文章'
 pubDate: 2022-07-01
@@ -326,7 +332,7 @@ tags: ["astro", "blogging", "learning in public"]
 在 `src/pages/posts/` 文件夹下，添加 `[...slug].astro` 文件，定义 `getStaticPaths` 返回数组, Astro 会将数组元素传递给当前文件生成页面，元素中的 `slug` 用于生成页面名称，而 `props` 用于生成页面内容。
 `getCollection` 会返回 `src/content/posts` 内容集合，通过data访问内容条目的元数据，Content 是转换后的HTML内容, headings 是目录数组。
 
-```
+```astro
 ---
 import { getCollection } from 'astro:content';
 import BlogPost from '../../components/BlogPost.astro';
@@ -345,7 +351,7 @@ const { Content,headings } = await entry.render();
 <BlogPost url={`/posts/${entry.slug}`} frontmatter={entry.data} Content={Content} headings = {headings} />
 ```
 通过 `BlogPost` 组件， 展示markdown 渲染后的内容
-```
+```astro
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import FormattedDate from './FormattedDate.astro'
@@ -457,14 +463,13 @@ const { url,frontmatter,Content,headings } = Astro.props;
 通过 `/posts/xxx/` 访问文章
 
 Markdown 经过 Astro 转换的HTML是没有样式的， 通过添加 [rehype](https://github.com/rehypejs/rehype) 集成来美化。
-```
+```shell
 pnpm.cmd astro add tailwindcss @tailwindcss/typography rehype-slug rehype-autolink-headings @jsdevtools/rehype-toc
- 
 ```
 
 要想 [typography](https://github.com/tailwindlabs/tailwindcss-typography) 插件生效，还需要在 `<Content>` 的父元素上添加 `prose` 类。
 rehype-toc 插件负责生成 目录，rehype-slug 和 rehype-autolink-headings 为目录生成 锚链接，在 `astro.config.mjs` 中添加配置
-```
+```js ins={17,18}
 import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
 import rehypeToc from '@jsdevtools/rehype-toc'
@@ -483,7 +488,6 @@ export default defineConfig({
 		rehypePlugins: [
       rehypeSlug,
       [rehypeAutolinkHeadings, { behavior: 'prepend' }],
-			[rehypeToc, { headings: ['h1','h2', 'h3'] }],
 		],
 	},
 });
@@ -494,7 +498,7 @@ export default defineConfig({
  ## 添加首页
 
 添加 `src/pages/index.astro` 定义首页，通过 `getCollection` API 访问内容集合元数据, 展示文章列表和标签列表。
-```
+```astro
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from '../layouts/BaseLayout.astro';

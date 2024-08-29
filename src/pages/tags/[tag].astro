@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import 'remixicon/fonts/remixicon.css'
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import BlogPostItem from "../../components/BlogPostItem.astro";
 import BlogTag from "../../components/BlogTag.astro";
@@ -24,12 +25,15 @@ const { posts } = Astro.props;
 ---
 
 <BaseLayout pgTitle={tag}>
-    <div class="w-full h-full flex my-10 px-6">
-        <div class="w-9/12 mx-4 px-4">
-            { posts.map((post) => <BlogPostItem post = {post} />) }
-        </div>
-        <div class="w-1/4 mx-4 px-4 border-solid border-black border-l-2 flex flex-wrap">
-            <BlogTag tag = {tag}/>
-        </div>
+    <div>
+        { posts.map((post) => <BlogPostItem post = {post} />) }
+    </div>
+    <div class="shadow-lg bg-gray-100"  slot="page-right">
+      <div class="text-lg font-medium border-b border-black ">
+        <i class="ri-price-tag-3-line"></i>
+        标签</div>
+      <div class=" flex flex-wrap h-fit ">
+        <BlogTag tag={tag}/>
+      </div>
     </div>
 </BaseLayout>

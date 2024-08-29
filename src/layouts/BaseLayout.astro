@@ -15,10 +15,17 @@ const {pgTitle} = Astro.props
 		<title>{pgTitle}</title>
         <ViewTransitions/>
 	</head>
-	<body class="mt-4 px-4 min-h-screen flex flex-col justify-between">
+	<body class="mt-4 px-10 min-h-screen flex flex-col justify-between">
         <div  class="grow flex flex-col justify-start">
             <Header class="grow-0"/>
-            <slot class="grow"/>
+			<div class="grow flex justify-center w-full h-full mt-10">
+				<div class="grow min-w-96 mr-4">
+					<slot/>
+				</div>
+				<div class="grow-0 min-w-72 ml-4 pl-4">
+					<slot name="page-right"/>
+				</div>
+			</div>
         </div>
         <Footer class="grow-0"/>
     </body>

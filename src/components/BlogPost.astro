@@ -1,4 +1,5 @@
 ---
+import 'remixicon/fonts/remixicon.css'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import FormattedDate from './FormattedDate.astro'
 import BlogTag from "./BlogTag.astro";
@@ -7,51 +8,54 @@ const { url,frontmatter,Content,headings } = Astro.props;
 ---
 
 <style>
-    :global(.prose>p){
+    /**
+    markdown
+    */
+    :global(.prose p){
         text-indent: 2rem;
     }
-    :global(.prose>h1,.prose>h2,.prose>h3,.prose>h4,.prose>h5,.prose>h6){
+    :global(.prose h1,.prose h2,.prose h3,.prose h4,.prose h5,.prose h6){
         border-bottom-width: 2px;
     }
-    :global(.prose>h2){
+    :global(.prose h2){
         text-indent: 1rem;
     }
-    :global(.prose>h3){
+    :global(.prose h3){
         text-indent: 2rem;
     }
-    :global(.prose>h4){
+    :global(.prose h4){
         text-indent: 3rem;
     }
-    :global(.prose>h5){
+    :global(.prose h5){
         text-indent: 4rem;
     }
-    :global(.prose>h6){
+    :global(.prose h6){
         text-indent: 5rem;
     }
 
-    :global(.prose>h1:after,.prose>h2:after,.prose>h3:after,.prose>h4:after,.prose>h5:after,.prose>h6:after){
+    :global(.prose h1:after,.prose h2:after,.prose h3:after,.prose h4:after,.prose h5:after,.prose h6:after){
         font-weight: 100;
         font-size: 1rem;
         color: rgb(148 163 184);
         border-width: 2px;
         margin-left: 4px;
     }
-    :global(.prose>h1:after){
+    :global(.prose h1:after){
         content: 'h1';
     }
-    :global(.prose>h2:after){
+    :global(.prose h2:after){
         content: 'h2';
     }
-    :global(.prose>h3:after){
+    :global(.prose h3:after){
         content: 'h3';
     }
-    :global(.prose>h4:after){
+    :global(.prose h4:after){
         content: 'h4';
     }
-    :global(.prose>h5:after){
+    :global(.prose h5:after){
         content: 'h5';
     }
-    :global(.prose>h6:after){
+    :global(.prose h6:after){
         content: 'h6';
     }
 
@@ -64,6 +68,7 @@ const { url,frontmatter,Content,headings } = Astro.props;
         border-width: 2px;
         font-size: 0.75rem; /* 12px */
         line-height: 1rem; /* 16px */
+        margin-bottom: 0.5rem;
     }
     :global(.prose nav.toc a.toc-link){
         color: rgb(100 116 139);
@@ -83,24 +88,89 @@ const { url,frontmatter,Content,headings } = Astro.props;
         content: '';
     }
 
+    /**
+    toc
+    */
+    :global(.toc-list-item){
+        margin-left: 1rem;
+    }
+
+    :global(.toc-link:hover) {
+        outline: 0;
+        color: #cc7a00;
+        text-shadow: 1px 1px 1px #ffd147;
+    }
+    :global(.toc-link.is-active-link) {
+        outline: 0;
+        color: #a1a322;
+        text-shadow: 1px 1px 1px #ffd147;
+    }
+
+    :global(.toc_container) {
+        overflow-y: scroll;
+        /* webkit */
+        /* firefox */
+        scrollbar-width: none;
+        /* ie */
+        -ms-overflow-style: none;
+    }
+
+    :global(.toc_container::-webkit-scrollbar) {
+        width: 0;
+        height: 0;
+    }
+
+    :global(.toc_container a){
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
 </style>
 
 <BaseLayout pgTitle={frontmatter.title}>
-	<div class="border rounded mb-4">
-		<div class="bg-slate-50 text-wrap text-center text-4xl py-3">{frontmatter.title}</div>
-		<div class="flex justify-between border border-dashed text-xs font-thin italic">
-			<div><FormattedDate date={frontmatter.pubDate}/></div>
-			<div>{frontmatter.author}</div>
-		</div>
-	</div>
-    <div class="mt-4 pt-2 px-4 flex justify-between">
-        <div class="prose max-w-none w-3/4 px-4 grow">
-           <Content/>
+    <div class="grow " >
+        <div class="border rounded mb-4">
+            <div class="bg-slate-50 text-wrap text-center text-4xl py-3">{frontmatter.title}</div>
+            <div class="flex justify-between border border-dashed text-xs font-thin italic">
+                <div><FormattedDate date={frontmatter.pubDate}/></div>
+                <div>{frontmatter.author}</div>
+            </div>
         </div>
-        <div class="grow-0 w-1/4 px-4 border-solid border-black border-l-2">
-            {
-                frontmatter.tags.map((tag)=><BlogTag tag={tag}/>)
-            }
+        <div class="prose max-w-none">
+            <Content/>
+        </div>
+    </div>
+    <div id="toc" class="shadow-lg bg-gray-100 sticky top-28" slot="page-right">
+        <div class="text-lg font-medium border-b border-black ">
+            <i class="ri-menu-fold-4-fill"></i>
+            目录</div>
+        <div class="overflow-auto">
+            <div class="toc-container"/>
         </div>
     </div>
 </BaseLayout>
+<script>
+    import * as tocbot from "tocbot";
+  
+    tocbot.init({
+      tocSelector: ".toc-container",
+      contentSelector: ".prose",
+      headingSelector: "h1,h2,h3",
+      hasInnerContainers: true,
+      headingsOffset: 60,
+      scrollSmoothOffset: -60,
+      scrollSmoothDuration: 160,
+      collapseDepth: 3,
+    });
+    let toc = document.getElementById("toc");
+    if (toc) {
+      tocbot.refresh();
+      let tocContainer = document.getElementsByClassName('toc-container')
+      if (tocContainer[0].textContent.replace(/\s/g, '') === '') {
+        toc.classList.toggle('hidden')
+      } else {
+        toc.classList.add('block')
+      }
+    }
+  </script>
