@@ -92,11 +92,8 @@ rehash期间，新增操作都在ht[1]上操作，其它操作先在ht[0]上，�
 ![image-20211206200626192](http://oss.jianzhang.site/images/20240611000301.png)
 
 - previous_entry_length 前一个节点的字节数，pre_ptr+previous_entry_length=curent_ptr；
-
   如果前一个节点长度小于254，就用一个字节；如果前一个节点长度大于254，第一个字节为0xFE，用后面4个字节
-
 - encoding 记录节点类型，01开头的，长度2字节，10开头的，长度5字节，其他都用1字节；
-
 - content 节点内容，长度由类型决定；
 
 在压缩列表中间位置插入节点和删除节点会导致连锁更新previous_entry_length

@@ -37,7 +37,6 @@ tags: ["后端"]
     public SqlSessionFactory build(Configuration config) {
         return new DefaultSqlSessionFactory(config);
     }
-
 ```
 
 在生成`Configuration` 的过程，通过`XMLMapperBuilder.parse` -> `XMLStatementBuilder.parseStatementNode` -> `XMLLanguageDriver.createSqlSource`  -> `XMLScriptBuilder.parseDynamicTags` -> `Configuration.addMappedStatement`  解析sql语句标签，生成对应的`MappedStatement` 对象，以id 作为key 放在 Configuration 的mappedStatements的map 中。
@@ -51,7 +50,6 @@ tags: ["后端"]
  `MapperScannerRegistrar`  实现了接口 `ImportBeanDefinitionRegistrar.registerBeanDefinitions` ，注册了MapperScannerConfigurer 的bean
 
 ```java
-
 public class MapperScannerRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware {
     public MapperScannerRegistrar() {
     }
@@ -88,7 +86,6 @@ public class MapperScannerRegistrar implements ImportBeanDefinitionRegistrar, Re
     }
 
 }
-
 ```
 
 ![image-20211110154806612](http://oss.jianzhang.site/images/20240611001050.png)
@@ -217,7 +214,6 @@ public <T> void addMapper(Class<T> type) {
 Mapper 接口的代理对象 `MapperProxy` ，通过 `MapperMethod` 调用 `SqlSessionTemplate`  -> `SqlSessionInterceptor`  -> `sqlSession`执行sql
 
 ```java
-
 public class MapperProxy<T> implements InvocationHandler, Serializable {
     private final SqlSession sqlSession;
     private final Class<T> mapperInterface;
@@ -245,7 +241,6 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
 ```
 
 ```java
-
 public class SqlSessionTemplate implements SqlSession, DisposableBean {
 
     private class SqlSessionInterceptor implements InvocationHandler {

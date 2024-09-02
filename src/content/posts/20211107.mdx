@@ -88,7 +88,6 @@ mysqldumpslow [option] logfile
   -r           倒序排
   -t NUM       只返回前几条
   -g PATTERN   正则表达式
-
 ```
 
 ![image-20211108130836609](http://oss.jianzhang.site/images/20240616203713.png)
@@ -223,7 +222,6 @@ https://dev.mysql.com/doc/refman/5.7/en/explain-output.html](https://dev.mysql.c
      ```bash
      create user 'sla'@'%' identified with 'mysql_native_password' by '123456';
      grant replication slave on *.* to 'sla'@'%';
-
      ```
 
   3. 在选定的主库上，配置二进制日志和唯一的服务器 ID，通过`show master status`命令检查配置
@@ -238,7 +236,6 @@ https://dev.mysql.com/doc/refman/5.7/en/explain-output.html](https://dev.mysql.c
       binlog_ignore_db       = sys
 
      log-slave-updates = 1
-
      ```
 
      ![image-20211108124941708](http://oss.jianzhang.site/images/20240616204124.png)
@@ -254,7 +251,6 @@ https://dev.mysql.com/doc/refman/5.7/en/explain-output.html](https://dev.mysql.c
       binlog_ignore_db	= mysql
       binlog_ignore_db       = sys
      log-slave-updates = 1
-
      ```
 
      ```bash
@@ -350,13 +346,11 @@ https://dev.mysql.com/doc/refman/5.7/en/explain-output.html](https://dev.mysql.c
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-
 ```
 
 初始化表结构
 
 ```sql
-
 create database sample_1;
 
 create table sample_1.torder_1(
@@ -390,7 +384,7 @@ create table sample_2.torder_2(
 
 项目配置`application-share.properties`
 
-```
+```properties
 logging.config=classpath:logback/logback.xml
 
 
@@ -435,7 +429,6 @@ spring.shardingsphere.props.sql.show=true
 测试代码
 
 ```java
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = MainApp.class)
 public class MainAppTest {
@@ -474,7 +467,6 @@ public class MainAppTest {
     }
 
 }
-
 ```
 
 效果
@@ -485,8 +477,7 @@ public class MainAppTest {
 
 项目配置`application-rw.properties`
 
-```
-
+```properties
 # 一个实体类对应两张表，覆盖
 spring.main.allow-bean-definition-overriding=true
 
@@ -548,13 +539,11 @@ spring.shardingsphere.sharding.tables.torder.table-strategy.inline.algorithm-exp
 
 # 日志打印sql
 spring.shardingsphere.props.sql.show=true
-
 ```
 
 测试代码
 
 ```java
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = MainApp.class)
 public class MainAppTest {
@@ -583,7 +572,6 @@ public class MainAppTest {
     }
 
 }
-
 ```
 
 结果

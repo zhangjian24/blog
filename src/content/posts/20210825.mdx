@@ -16,8 +16,6 @@ tags: ["后端"]
 - 2011，新创Libav项目
 - 2015，ffmpeg 与Libav合并
 
-
-
 # 基础知识
 
 ## 音频
@@ -196,7 +194,6 @@ IPB帧
 
   ![image-20210824214853811](http://oss.jianzhang.site/images/20240616210429.png)
 
-- 
 
 ## 转封装
 
@@ -294,8 +291,6 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -c copy -f hls out.m3u8
   ffmpeg -i X王子.BD1280高清中字版.mp4 -an -vcodec copy ss.h264
   ```
 
-
-
 ## 转码
 
 ### 软编解码
@@ -332,8 +327,6 @@ ffmpeg -i X王子.BD1280高清中字版.mp4 -vcodec libx264 output.mp4
   ffmpeg -re -i X王子.BD1280高清中字版.mp4 -c copy -f flv rtmp://pub.china.com
   ```
 
-
-
 ## 滤镜
 
 ```bash
@@ -346,8 +339,6 @@ ffmpeg -i X王子.BD1280高清中字版.mp4 -vcodec libx264 output.mp4
 ffmpeg -i output.mp4 -vf "drawtext=fontsize=100:fontfile=FreeSerif.ttf:text='hello world':x=10:y=30" output2.mp4
 ```
 
-
-
 > drawtext 滤镜，冒号分隔参数 
 >
 > fontsize 字体大小 
@@ -358,11 +349,7 @@ ffmpeg -i output.mp4 -vf "drawtext=fontsize=100:fontfile=FreeSerif.ttf:text='hel
 >
 > x,y 位置
 
-
-
 ![image-20210825000021734](http://oss.jianzhang.site/images/20240616211538.png)
-
-
 
 ### 图片水印
 
@@ -372,8 +359,6 @@ ffmpeg -i output.mp4 -vf "movie=out.png[g];[in][g]overlay=40:15[out]" output3.mp
 
 ![image-20210825000236380](http://oss.jianzhang.site/images/20240616211601.png)
 
-
-
 ### 视频画中画
 
 ```bash
@@ -382,8 +367,6 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -vf "movie=HeadRoom.mp4,scale=48
 
 ![image-20210825000353733](http://oss.jianzhang.site/images/20240616211621.png)
 
-
-
 ### 多宫格处理
 
 ```bash
@@ -391,8 +374,6 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -i HeadRoom.mp4 -filter_complex 
 ```
 
 ![image-20210825000601957](http://oss.jianzhang.site/images/20240616211641.png)
-
-
 
 ### 双声道转换成单声道
 
@@ -540,4 +521,3 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -filter_complex "setpts=PTS*2" o
 ### 滤镜处理流程
 
 ![image-20210825193539778](http://oss.jianzhang.site/images/20240616212151.png)
-
