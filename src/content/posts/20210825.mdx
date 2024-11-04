@@ -89,7 +89,7 @@ YUV：主要是因为RGB信号不利于压缩；我们可以把更多带宽留�
 
 编码
 
-![视频编解码IBP帧](http://oss.jianzhang.site/images/20240616210057.png)
+![视频编解码IBP帧](/image/20240616210057.png)
 
 帧率(FPS)：每秒多少帧画面
 
@@ -136,7 +136,7 @@ IPB帧
 
 ## 命令组成
 
-![img](http://oss.jianzhang.site/images/20240616210138.png)
+![img](/image/20240616210138.png)
 
 ## help 信息
 
@@ -146,7 +146,7 @@ IPB帧
   ffmpeg -formats
   ```
 
-  ![image-20210824213540023](http://oss.jianzhang.site/images/20240616210201.png)
+  ![image-20210824213540023](/image/20240616210201.png)
 
   第一列支持的编解码器
 
@@ -160,9 +160,9 @@ IPB帧
   ffmpeg -codecs
   ```
 
-  ![image-20210824213749383](http://oss.jianzhang.site/images/20240616210249.png)
+  ![image-20210824213749383](/image/20240616210249.png)
 
-  ![image-20210824213833962](http://oss.jianzhang.site/images/20240616210320.png)
+  ![image-20210824213833962](/image/20240616210320.png)
 
 - 查看支持的编码器
 
@@ -182,9 +182,9 @@ IPB帧
   ffmpeg -filters
   ```
 
-  ![image-20210824214223265](http://oss.jianzhang.site/images/20240616210343.png)
+  ![image-20210824214223265](/image/20240616210343.png)
 
-  ![image-20210824214351622](http://oss.jianzhang.site/images/20240616210406.png)
+  ![image-20210824214351622](/image/20240616210406.png)
 
 - 查看不同模块支持的参数
 
@@ -192,7 +192,7 @@ IPB帧
   ffmpeg.exe -h muxer=flv
   ```
 
-  ![image-20210824214853811](http://oss.jianzhang.site/images/20240616210429.png)
+  ![image-20210824214853811](/image/20240616210429.png)
 
 
 ## 转封装
@@ -207,7 +207,7 @@ ffmpeg -i X王子.BD1280高清中字版.mp4 -q 0 tt.flv
 
 - 由文件切片和目录文件组成
 
-  ![image-20210824224848188](http://oss.jianzhang.site/images/20240616211228.png)
+  ![image-20210824224848188](/image/20240616211228.png)
 
   - EXTM3U 必须包含的标签，用于标识m3u8文件
 
@@ -257,7 +257,7 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -c copy -f hls out.m3u8
 
   索引文件内容如下
 
-  ![image-20210824230227093](http://oss.jianzhang.site/images/20240616211301.png)
+  ![image-20210824230227093](/image/20240616211301.png)
 
 - CSV格式索引
 
@@ -265,7 +265,7 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -c copy -f hls out.m3u8
   ffmpeg -re -i X王子.BD1280高清中字版.mp4 -f segment -segment_list_type csv -segment_list list.csv out%d.ts
   ```
 
-  ![image-20210824230330471](http://oss.jianzhang.site/images/20240616211322.png)
+  ![image-20210824230330471](/image/20240616211322.png)
 
 - 视频截取
 
@@ -309,7 +309,7 @@ ffmpeg -i X王子.BD1280高清中字版.mp4 -vcodec libx264 output.mp4
   ffmpeg -hwaccels cuvid -vcodec h264_cuvid -i X王子.BD1280高清中字版.mp4 -vcodec h264_nvenc -acodec copy -f mp4 -y output.mp4
   ```
 
-  ![Transcoding pipeline with ffmpeg flow diagram](http://oss.jianzhang.site/images/20240616211500.png)
+  ![Transcoding pipeline with ffmpeg flow diagram](/image/20240616211500.png)
 
   https://developer.nvidia.com/zh-cn/blog/nvidia-ffmpeg-transcoding-guide/
 
@@ -349,7 +349,7 @@ ffmpeg -i output.mp4 -vf "drawtext=fontsize=100:fontfile=FreeSerif.ttf:text='hel
 >
 > x,y 位置
 
-![image-20210825000021734](http://oss.jianzhang.site/images/20240616211538.png)
+![image-20210825000021734](/image/20240616211538.png)
 
 ### 图片水印
 
@@ -357,7 +357,7 @@ ffmpeg -i output.mp4 -vf "drawtext=fontsize=100:fontfile=FreeSerif.ttf:text='hel
 ffmpeg -i output.mp4 -vf "movie=out.png[g];[in][g]overlay=40:15[out]" output3.mp4
 ```
 
-![image-20210825000236380](http://oss.jianzhang.site/images/20240616211601.png)
+![image-20210825000236380](/image/20240616211601.png)
 
 ### 视频画中画
 
@@ -365,7 +365,7 @@ ffmpeg -i output.mp4 -vf "movie=out.png[g];[in][g]overlay=40:15[out]" output3.mp
 ffmpeg -re -i X王子.BD1280高清中字版.mp4 -vf "movie=HeadRoom.mp4,scale=480x320[test];[in][test]overlay[out]" out44.mp4
 ```
 
-![image-20210825000353733](http://oss.jianzhang.site/images/20240616211621.png)
+![image-20210825000353733](/image/20240616211621.png)
 
 ### 多宫格处理
 
@@ -373,7 +373,7 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -vf "movie=HeadRoom.mp4,scale=48
 ffmpeg -re -i X王子.BD1280高清中字版.mp4 -i HeadRoom.mp4 -filter_complex "nullsrc=size=640x240[base];[0:v]setpts=PTS-STARTPTS,scale=320x240[left];[1:v]setpts=PTS-STARTPTS,scale=320x240[right];[base][left]overlay[temp];[temp][right]overlay=shortest=1:x=320" out5.mp4
 ```
 
-![image-20210825000601957](http://oss.jianzhang.site/images/20240616211641.png)
+![image-20210825000601957](/image/20240616211641.png)
 
 ### 双声道转换成单声道
 
@@ -381,7 +381,7 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -i HeadRoom.mp4 -filter_complex 
 ffmpeg -i a.aac -ac 1 a1.aac
 ```
 
-![image-20210825000713474](http://oss.jianzhang.site/images/20240616211702.png)
+![image-20210825000713474](/image/20240616211702.png)
 
 ### 双声道提取成两个单声道音频
 
@@ -389,7 +389,7 @@ ffmpeg -i a.aac -ac 1 a1.aac
 ffmpeg -i a.aac -map_channel 0.0.0 l.aac -map_channel 0.0.1 r.aac
 ```
 
-![image-20210825000830194](http://oss.jianzhang.site/images/20240616211732.png)
+![image-20210825000830194](/image/20240616211732.png)
 
 ### 两个音频合成为双声道
 
@@ -435,13 +435,13 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -filter_complex "setpts=PTS*2" o
 
   封装格式处理模块
 
-  ![image-20210825001527103](http://oss.jianzhang.site/images/20240616211844.png)
+  ![image-20210825001527103](/image/20240616211844.png)
 
 - AVCodec
 
   编解码模块
 
-  ![image-20210825001548446](http://oss.jianzhang.site/images/20240616211917.png)
+  ![image-20210825001548446](/image/20240616211917.png)
 
 - AVFilter
 
@@ -455,7 +455,7 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -filter_complex "setpts=PTS*2" o
 
   - 中括号，为结果命名
 
-  ![image-20210825001719927](http://oss.jianzhang.site/images/20240616212011.png)
+  ![image-20210825001719927](/image/20240616212011.png)
 
 - swscale
 
@@ -502,22 +502,22 @@ ffmpeg -re -i X王子.BD1280高清中字版.mp4 -filter_complex "setpts=PTS*2" o
 
 > 注册模块->打开输出上下文->增加流->写文件头->循环写入数据包->写入文件结尾数据
 
-![image-20210825193219696](http://oss.jianzhang.site/images/20240616212044.png)
+![image-20210825193219696](/image/20240616212044.png)
 
 ### 解封装
 
 > 注册模块->打开输入上下文->查找音视频流信息->循环读取视频包->关闭输入上下文
 
-![image-20210825193322700](http://oss.jianzhang.site/images/20240616212105.png)
+![image-20210825193322700](/image/20240616212105.png)
 
 ### 解码
 
 > 注册模块->查找解码器->分配解码器上下文->打开解码器->发送数据包->循环读取完，解码后的数据帧->释放解码器上下文
 
-![image-20210825193407945](http://oss.jianzhang.site/images/20240616212130.png)
+![image-20210825193407945](/image/20240616212130.png)
 
 编码跟解码类似
 
 ### 滤镜处理流程
 
-![image-20210825193539778](http://oss.jianzhang.site/images/20240616212151.png)
+![image-20210825193539778](/image/20240616212151.png)
